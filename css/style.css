@@ -31,7 +31,7 @@ body {
     padding: 20px;
 }
 
-/* SCREENS */
+/* ── SCREENS ── */
 .screen {
     display: none;
     width: 100%;
@@ -41,6 +41,10 @@ body {
 
 .screen.active {
     display: block;
+}
+
+.hidden {
+    display: none !important;
 }
 
 @keyframes fadeIn {
@@ -55,7 +59,7 @@ body {
     }
 }
 
-/* STATUS HEADER */
+/* ── STATUS HEADER ── */
 .status-header {
     text-align: center;
     border: 1px solid var(--border);
@@ -88,7 +92,58 @@ body {
     margin-top: 6px;
 }
 
-/* STAT BLOCK */
+/* ── INFO ICON ── */
+.info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid var(--text-dim);
+    color: var(--text-dim);
+    font-size: 0.55rem;
+    font-family: 'Share Tech Mono', monospace;
+    cursor: pointer;
+    margin-left: 5px;
+    vertical-align: middle;
+    transition: border-color 0.2s, color 0.2s;
+    user-select: none;
+}
+
+.info-icon:hover,
+.info-icon.active {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* ── TOOLTIP BOX ── */
+.tooltip-box {
+    display: none;
+    background: #12122a;
+    border: 1px solid var(--accent-dim);
+    color: var(--text);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    padding: 12px 14px;
+    margin-top: 8px;
+    margin-bottom: 4px;
+    text-align: left;
+    animation: fadeIn 0.2s ease;
+}
+
+.tooltip-box.visible {
+    display: block;
+}
+
+.tooltip-box strong {
+    color: var(--accent);
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.85rem;
+}
+
+/* ── STAT BLOCK ── */
 .stat-block {
     border: 1px solid var(--border);
     background: var(--panel);
@@ -98,11 +153,12 @@ body {
 
 .stat-row {
     display: grid;
-    grid-template-columns: 120px 1fr 40px;
+    grid-template-columns: 130px 1fr 40px;
     align-items: center;
     gap: 12px;
     padding: 8px 0;
     border-bottom: 1px solid var(--border);
+    cursor: default;
 }
 
 .stat-row:last-child {
@@ -114,6 +170,8 @@ body {
     font-size: 0.7rem;
     letter-spacing: 2px;
     color: var(--text-dim);
+    display: flex;
+    align-items: center;
 }
 
 .stat-bar-wrap {
@@ -138,7 +196,7 @@ body {
     text-align: right;
 }
 
-/* LUCK ROW */
+/* ── LUCK ── */
 .luck-divider {
     height: 1px;
     background: var(--luck-dim);
@@ -157,7 +215,11 @@ body {
     background: var(--luck) !important;
 }
 
-/* BUTTONS */
+#tip-luck strong {
+    color: var(--luck);
+}
+
+/* ── BUTTONS ── */
 .nav-btn {
     width: 100%;
     padding: 14px;
@@ -189,7 +251,7 @@ body {
     color: var(--accent);
 }
 
-/* QUEST SCREEN */
+/* ── QUEST SCREEN ── */
 .quest-header {
     text-align: center;
     border: 1px solid var(--border);
@@ -287,7 +349,7 @@ body {
     cursor: not-allowed;
 }
 
-/* ONBOARDING */
+/* ── ONBOARDING ── */
 .onboarding-box {
     border: 1px solid var(--border);
     background: var(--panel);
@@ -301,12 +363,14 @@ body {
     font-size: 1rem;
     margin: 12px 0 16px;
     color: #fff;
+    min-height: 1.4em;
 }
 
 .onboarding-box p {
     color: var(--text-dim);
     font-size: 0.95rem;
     margin-bottom: 20px;
+    min-height: 1.4em;
 }
 
 #name-input {
@@ -325,4 +389,62 @@ body {
 
 #name-input:focus {
     border-color: var(--accent);
+}
+
+/* ── QUESTIONS ── */
+.question-box {
+    margin-bottom: 20px;
+}
+
+.question-stat {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 10px;
+}
+
+.question-text {
+    font-size: 1rem;
+    color: #fff;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.question-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.option-btn {
+    padding: 10px 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+.option-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.option-btn.selected {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+
+.question-progress {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    margin-top: 8px;
 }

@@ -13,59 +13,144 @@
 <body>
 
     <!-- STATUS SCREEN -->
-    <div class="screen active" id="screen-status">
+    <div class="screen" id="screen-status">
         <div class="status-header">
-            <div class="player-title">[ ORDINARY PERSON ]</div>
+            <div class="player-title" id="player-title">
+                [ ORDINARY PERSON ]
+                <span class="info-icon" data-tip="title">?</span>
+            </div>
             <h1 class="player-name" id="player-name">PLAYER</h1>
-            <div class="player-level">LEVEL <span id="player-level">1</span></div>
+            <div class="player-level">
+                LEVEL <span id="player-level">1</span>
+                <span class="info-icon" data-tip="level">?</span>
+            </div>
+            <div class="tooltip-box" id="tip-title">
+                <strong>Your Title</strong><br />
+                Your title reflects how the world would recognise someone with your current attribute levels. Everyone
+                begins as an Ordinary Person — not as an insult, but as an honest starting point. As you complete quests
+                and your attributes grow, your title will change to reflect the person you are becoming.
+            </div>
+            <div class="tooltip-box" id="tip-level">
+                <strong>Your Level</strong><br />
+                Your level is calculated from the average of all five core attributes. It starts at 1 and rises as you
+                consistently complete quests and grow. A higher level means your attributes are broadly stronger across
+                the board. Think of it less as a rank and more as a reflection of how much deliberate effort you have
+                put in.
+            </div>
         </div>
 
         <div class="stat-block">
+
             <div class="stat-row" data-stat="strength">
-                <span class="stat-label">STRENGTH</span>
+                <span class="stat-label">
+                    STRENGTH
+                    <span class="info-icon" data-tip="strength">?</span>
+                </span>
                 <div class="stat-bar-wrap">
                     <div class="stat-bar" id="bar-strength"></div>
                 </div>
                 <span class="stat-value" id="val-strength">10</span>
             </div>
+            <div class="tooltip-box" id="tip-strength">
+                <strong>Strength</strong><br />
+                Represents your physical capability — your energy, fitness, and ability to exert yourself in the world.
+                A score of 10 is your starting baseline: you are functional and alive. As you complete Strength quests,
+                this grows toward 100, which would represent peak physical vitality and consistency. This number is not
+                a precise measurement — it is a guided reflection of the effort you are putting into your physical self.
+            </div>
+
             <div class="stat-row" data-stat="intelligence">
-                <span class="stat-label">INTELLIGENCE</span>
+                <span class="stat-label">
+                    INTELLIGENCE
+                    <span class="info-icon" data-tip="intelligence">?</span>
+                </span>
                 <div class="stat-bar-wrap">
                     <div class="stat-bar" id="bar-intelligence"></div>
                 </div>
                 <span class="stat-value" id="val-intelligence">10</span>
             </div>
+            <div class="tooltip-box" id="tip-intelligence">
+                <strong>Intelligence</strong><br />
+                Represents your capacity to learn, reason, and make sound decisions. A score of 10 means you have a
+                working mind and the ability to grow. Completing Intelligence quests — reading, reflecting, solving
+                problems — pushes this toward 100, which would reflect someone who is constantly learning and thinking
+                deliberately. This is not an IQ score. It is a measure of your intellectual engagement.
+            </div>
+
             <div class="stat-row" data-stat="agility">
-                <span class="stat-label">AGILITY</span>
+                <span class="stat-label">
+                    AGILITY
+                    <span class="info-icon" data-tip="agility">?</span>
+                </span>
                 <div class="stat-bar-wrap">
                     <div class="stat-bar" id="bar-agility"></div>
                 </div>
                 <span class="stat-value" id="val-agility">10</span>
             </div>
+            <div class="tooltip-box" id="tip-agility">
+                <strong>Agility</strong><br />
+                Represents your adaptability — how well you respond to change, disruption, and the unexpected. A score
+                of 10 means you can function when life shifts. Growing this toward 100 means you become someone who
+                navigates change with ease and finds opportunity in disruption. Agility quests train you to break
+                patterns and respond rather than react.
+            </div>
+
             <div class="stat-row" data-stat="endurance">
-                <span class="stat-label">ENDURANCE</span>
+                <span class="stat-label">
+                    ENDURANCE
+                    <span class="info-icon" data-tip="endurance">?</span>
+                </span>
                 <div class="stat-bar-wrap">
                     <div class="stat-bar" id="bar-endurance"></div>
                 </div>
                 <span class="stat-value" id="val-endurance">10</span>
             </div>
+            <div class="tooltip-box" id="tip-endurance">
+                <strong>Endurance</strong><br />
+                Represents your ability to sustain effort over time — physically, mentally, and emotionally. A score of
+                10 means you can get through a day. Growing this toward 100 means you become someone who persists
+                through difficulty without burning out. Sleep, consistency, and finishing what you start are the
+                foundations of this attribute.
+            </div>
+
             <div class="stat-row" data-stat="charisma">
-                <span class="stat-label">CHARISMA</span>
+                <span class="stat-label">
+                    CHARISMA
+                    <span class="info-icon" data-tip="charisma">?</span>
+                </span>
                 <div class="stat-bar-wrap">
                     <div class="stat-bar" id="bar-charisma"></div>
                 </div>
                 <span class="stat-value" id="val-charisma">10</span>
             </div>
+            <div class="tooltip-box" id="tip-charisma">
+                <strong>Charisma</strong><br />
+                Represents your social presence — how you connect with, influence, and build relationships with others.
+                A score of 10 means you are capable of human connection. Growing this toward 100 means you become
+                someone people are drawn to, trust, and want to collaborate with. Charisma quests build your network and
+                deepen your ability to communicate genuinely.
+            </div>
 
             <div class="luck-divider"></div>
 
             <div class="stat-row luck-row" data-stat="luck">
-                <span class="stat-label">LUCK</span>
+                <span class="stat-label">
+                    LUCK
+                    <span class="info-icon" data-tip="luck">?</span>
+                </span>
                 <div class="stat-bar-wrap">
                     <div class="stat-bar luck-bar" id="bar-luck"></div>
                 </div>
                 <span class="stat-value" id="val-luck">10</span>
             </div>
+            <div class="tooltip-box" id="tip-luck">
+                <strong>Luck</strong><br />
+                Luck is a derived attribute — you cannot raise it directly. It is calculated automatically as the
+                average of all your other attributes. This is intentional. Research shows that what people experience as
+                luck is largely the result of preparation, awareness, resilience, and strong relationships. Grow your
+                core attributes and your luck rises with them.
+            </div>
+
         </div>
 
         <button class="nav-btn" onclick="showScreen('screen-quests')">VIEW DAILY QUESTS</button>
@@ -77,20 +162,33 @@
             <h2>DAILY QUESTS</h2>
             <div class="quest-date" id="quest-date"></div>
         </div>
-        <div class="quest-list" id="quest-list">
-            <!-- Quests injected by JS -->
-        </div>
+        <div class="quest-list" id="quest-list"></div>
         <button class="nav-btn secondary" onclick="showScreen('screen-status')">BACK TO STATUS</button>
     </div>
 
     <!-- ONBOARDING SCREEN -->
-    <div class="screen" id="screen-onboarding">
+    <div class="screen active" id="screen-onboarding">
         <div class="onboarding-box">
             <div class="player-title">[ SYSTEM ]</div>
-            <h2>INITIALISING PLAYER DATA</h2>
-            <p>Enter your name to begin your journey.</p>
-            <input type="text" id="name-input" placeholder="Enter your name..." maxlength="20" />
-            <button class="nav-btn" id="start-btn">AWAKEN</button>
+            <h2 id="onboard-heading"></h2>
+            <p id="onboard-sub"></p>
+
+            <!-- Name input, hidden until typing is done -->
+            <div id="name-section" class="hidden">
+                <input type="text" id="name-input" placeholder="Enter your name..." maxlength="20" />
+            </div>
+
+            <!-- Questions, one at a time -->
+            <div id="question-section" class="hidden">
+                <div class="question-box">
+                    <div class="question-stat" id="q-stat"></div>
+                    <div class="question-text" id="q-text"></div>
+                    <div class="question-options" id="q-options"></div>
+                    <div class="question-progress" id="q-progress"></div>
+                </div>
+            </div>
+
+            <button class="nav-btn hidden" id="start-btn">AWAKEN</button>
         </div>
     </div>
 
