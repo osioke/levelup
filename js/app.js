@@ -1,64 +1,207 @@
-// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// LEVELUP — app.js
+// ═══════════════════════════════════════════════════════════════
+
+// ─── CONSTANTS ───────────────────────────────────────────────
 const STORAGE_KEY = 'levelup_player';
-const MAX_STAT    = 100;
 const STAT_NAMES  = ['strength', 'intelligence', 'agility', 'endurance', 'charisma'];
+const STAT_FLOOR  = 10;
 
-// Answer index (0–3) maps to these starting point values
-const ANSWER_WEIGHTS = [10, 15, 22, 30];
+// Onboarding answer weights — max 23 keeps everyone in Level 1
+const ANSWER_WEIGHTS = [10, 14, 18, 23];
 
-const TITLES = [
-    { minLevel: 1, label: 'ORDINARY PERSON' },
-    { minLevel: 2, label: 'AWAKENED'         },
-    { minLevel: 4, label: 'APPRENTICE'       },
-    { minLevel: 6, label: 'CHALLENGER'       },
-    { minLevel: 8, label: 'PROVEN'           },
-    { minLevel: 9, label: 'ELITE'            }
+// ─── LEVEL FORMULA ───────────────────────────────────────────
+// XP to reach Level N = 25 × (N-1)^1.9
+// Level 2 ≈ 25 XP (~2 days at full play)
+function xpForLevel(n) {
+    if (n <= 1) return 0;
+    return Math.floor(25 * Math.pow(n - 1, 1.9));
+}
+
+function levelFromXP(xp) {
+    let level = 1;
+    while (xp >= xpForLevel(level + 1)) {
+        level++;
+    }
+    return level;
+}
+
+function earnedXP(stats) {
+    return STAT_NAMES.reduce((sum, s) => sum + Math.max(0, (stats[s] || 0) - STAT_FLOOR), 0);
+}
+
+// ─── RANK SYSTEM ─────────────────────────────────────────────
+const RANKS = [
+    { label: 'F',   minLevel: 1   },
+    { label: 'E',   minLevel: 16  },
+    { label: 'D',   minLevel: 31  },
+    { label: 'C',   minLevel: 46  },
+    { label: 'B',   minLevel: 61  },
+    { label: 'A',   minLevel: 76  },
+    { label: 'S',   minLevel: 91  },
+    { label: 'S+',  minLevel: 101 },
+    { label: 'SS',  minLevel: 121 },
+    { label: 'SS+', minLevel: 151 },
+    { label: 'SSS', minLevel: 200 }
 ];
 
+function rankFromLevel(level) {
+    let rank = RANKS[0];
+    for (const r of RANKS) {
+        if (level >= r.minLevel) rank = r;
+    }
+    return rank.label;
+}
+
+// ─── TITLE SYSTEM ────────────────────────────────────────────
+const TITLES = [
+    { minLevel: 1,   label: 'THE BEGINNER'      },
+    { minLevel: 6,   label: 'THE MOTIVATED'     },
+    { minLevel: 11,  label: 'THE CONSISTENT'    },
+    { minLevel: 16,  label: 'THE DEVELOPING'    },
+    { minLevel: 21,  label: 'THE EMERGING'      },
+    { minLevel: 26,  label: 'THE GROUNDED'      },
+    { minLevel: 31,  label: 'THE CAPABLE'       },
+    { minLevel: 36,  label: 'THE RELIABLE'      },
+    { minLevel: 41,  label: 'THE FOCUSED'       },
+    { minLevel: 46,  label: 'THE DISCIPLINED'   },
+    { minLevel: 51,  label: 'THE SKILLED'       },
+    { minLevel: 56,  label: 'THE ACCOMPLISHED'  },
+    { minLevel: 61,  label: 'THE EXCEPTIONAL'   },
+    { minLevel: 66,  label: 'THE RESPECTED'     },
+    { minLevel: 71,  label: 'THE INFLUENTIAL'   },
+    { minLevel: 76,  label: 'THE ELITE'         },
+    { minLevel: 81,  label: 'THE MASTERFUL'     },
+    { minLevel: 86,  label: 'THE RENOWNED'      },
+    { minLevel: 91,  label: 'THE AWAKENED'      },
+    { minLevel: 96,  label: 'THE TRANSCENDENT'  },
+    { minLevel: 101, label: 'THE LEGEND'        },
+    { minLevel: 151, label: 'THE MYTH'          },
+    { minLevel: 200, label: 'THE ETERNAL'       }
+];
+
+function titleFromLevel(level) {
+    let title = TITLES[0];
+    for (const t of TITLES) {
+        if (level >= t.minLevel) title = t;
+    }
+    return title.label;
+}
+
+// ─── MOMENTUM ────────────────────────────────────────────────
+// Research basis:
+// Ceiling 1.5x  — Milkman 2019 consistency research
+// Build curve   — Newell & Rosenbloom Power Law of Practice
+// Decay rates   — Milkman missed-day significance thresholds
+// 14-day period — Lally 2010 habit formation
+
+function buildMomentum(consecutiveDays) {
+    return parseFloat((1 + 0.5 * (1 - Math.exp(-consecutiveDays / 14))).toFixed(4));
+}
+
+function decayMomentum(current, missedDays) {
+    if (missedDays <= 0) return current;
+    const decayRates = [1, 0.95, 0.85, 0.75];
+    const rate = missedDays >= 4
+        ? Math.pow(0.65, missedDays - 2)
+        : decayRates[missedDays];
+    return parseFloat(Math.max(1.0, current * rate).toFixed(4));
+}
+
+// ─── ONBOARDING QUESTIONS ────────────────────────────────────
 const ONBOARD_QUESTIONS = [
     {
         stat: 'strength',
-        text: 'How many times did you move your body with purpose this past week?',
-        options: ['Not at all', 'Once or twice', 'Three or four times', 'Almost every day']
+        text: 'Physical activity and taking care of my body is a regular part of how I live.',
+        options: ['Strongly Disagree', 'Mostly Disagree', 'Mostly Agree', 'Strongly Agree']
     },
     {
         stat: 'intelligence',
-        text: 'How often do you deliberately learn something outside of work or school?',
-        options: ['Rarely or never', 'Occasionally', 'A few times a week', 'Daily']
+        text: 'I actively seek out new knowledge and enjoy learning outside of what I have to.',
+        options: ['Strongly Disagree', 'Mostly Disagree', 'Mostly Agree', 'Strongly Agree']
     },
     {
         stat: 'agility',
-        text: 'When your plans change unexpectedly, how do you typically respond?',
-        options: [
-            'It really unsettles me',
-            'I struggle but manage',
-            'I adapt fairly well',
-            'I adapt quickly and move on'
-        ]
+        text: "When things don't go to plan, I tend to adjust and keep moving rather than getting stuck.",
+        options: ['Strongly Disagree', 'Mostly Disagree', 'Mostly Agree', 'Strongly Agree']
     },
     {
         stat: 'endurance',
-        text: 'How consistently do you follow through on things when motivation fades?',
-        options: ['I often give up', 'I finish sometimes', 'I usually push through', 'I almost always finish']
+        text: 'I generally follow through on commitments even when the initial motivation has faded.',
+        options: ['Strongly Disagree', 'Mostly Disagree', 'Mostly Agree', 'Strongly Agree']
     },
     {
         stat: 'charisma',
-        text: 'How comfortable are you initiating conversations or building new connections?',
-        options: ['Very uncomfortable', 'Somewhat uncomfortable', 'Fairly comfortable', 'Very comfortable']
+        text: 'I find it natural to connect with people and tend to build relationships without much friction.',
+        options: ['Strongly Disagree', 'Mostly Disagree', 'Mostly Agree', 'Strongly Agree']
     }
 ];
 
-// ─── STATE ───────────────────────────────────────────────────────────────────
-let player         = null;
-let dailyQuests    = [];
-let allQuests      = [];
+// ─── SOUND ───────────────────────────────────────────────────
+let soundEnabled = false;
+const AudioCtx   = window.AudioContext || window.webkitAudioContext;
+let audioCtx     = null;
+
+function getAudioCtx() {
+    if (!audioCtx) audioCtx = new AudioCtx();
+    return audioCtx;
+}
+
+function playTone(frequency, duration, type = 'sine', volume = 0.15) {
+    if (!soundEnabled) return;
+    try {
+        const ctx  = getAudioCtx();
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type            = type;
+        osc.frequency.value = frequency;
+        gain.gain.setValueAtTime(volume, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + duration);
+    } catch (e) { /* silent fail */ }
+}
+
+function playQuestComplete() {
+    playTone(523, 0.12);
+    setTimeout(() => playTone(659, 0.12), 100);
+    setTimeout(() => playTone(784, 0.2),  200);
+}
+
+function playLevelUp() {
+    const notes = [523, 659, 784, 1047];
+    notes.forEach((n, i) => setTimeout(() => playTone(n, 0.25, 'sine', 0.2), i * 120));
+}
+
+function playRankUp() {
+    const notes = [523, 659, 784, 1047, 1319];
+    notes.forEach((n, i) => setTimeout(() => playTone(n, 0.3, 'triangle', 0.25), i * 100));
+    setTimeout(() => playTone(1568, 0.6, 'sine', 0.3), 550);
+}
+
+function toggleSound() {
+    soundEnabled = !soundEnabled;
+    document.getElementById('sound-icon').textContent = soundEnabled ? '🔊' : '🔇';
+    localStorage.setItem('levelup_sound', soundEnabled ? '1' : '0');
+}
+
+// ─── STATE ───────────────────────────────────────────────────
+let player          = null;
+let dailyQuests     = [];
+let allQuests       = [];
 let currentQuestion = 0;
 let questionAnswers = {};
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
+// ─── INIT ─────────────────────────────────────────────────────
 async function init() {
     allQuests = await loadQuests();
     player    = loadPlayer();
+
+    soundEnabled = localStorage.getItem('levelup_sound') === '1';
+    document.getElementById('sound-icon').textContent = soundEnabled ? '🔊' : '🔇';
+    document.getElementById('sound-toggle').addEventListener('click', toggleSound);
 
     setupTooltips();
 
@@ -69,25 +212,45 @@ async function init() {
     }
 
     checkDailyReset();
-    dailyQuests = getDailyQuests(allQuests);
+    dailyQuests = getDailyQuests(allQuests, calculateLevel());
     updateStatusScreen();
     showScreen('screen-status');
-
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/levelup/service-worker.js');
-    }
+    registerServiceWorker();
 }
 
-// ─── TYPEWRITER ───────────────────────────────────────────────────────────────
+// ─── SERVICE WORKER ──────────────────────────────────────────
+function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.register('/levelup/service-worker.js')
+        .then(reg => {
+            if (!('Notification' in window)) return;
+            if (Notification.permission === 'default') {
+                setTimeout(() => Notification.requestPermission(), 3000);
+            }
+            if (Notification.permission === 'granted' && player) {
+                const sw = reg.active || reg.waiting || reg.installing;
+                if (sw) {
+                    sw.postMessage({
+                        type:           'CHECK_NOTIFICATION',
+                        lastActiveDate: player.lastActiveDate || player.lastQuestDate,
+                        playerName:     player.name
+                    });
+                }
+            }
+        })
+        .catch(err => console.log('SW error:', err));
+}
+
+// ─── TYPEWRITER ───────────────────────────────────────────────
 function runTypewriter() {
     const heading = 'INITIALISING PLAYER DATA';
     const subtext = 'The system reads only what is true. Your answers shape your starting point.';
     const headEl  = document.getElementById('onboard-heading');
     const subEl   = document.getElementById('onboard-sub');
 
-    typeText(headEl, heading, 55, () => {
+    typeText(headEl, heading, 50, () => {
         setTimeout(() => {
-            typeText(subEl, subtext, 28, () => {
+            typeText(subEl, subtext, 25, () => {
                 setTimeout(() => {
                     document.getElementById('name-section').classList.remove('hidden');
                     document.getElementById('name-input').focus();
@@ -111,14 +274,12 @@ function typeText(el, text, speed, onDone) {
     }, speed);
 }
 
-// ─── NAME SECTION ─────────────────────────────────────────────────────────────
+// ─── NAME SECTION ─────────────────────────────────────────────
 function setupNameSection() {
     const input = document.getElementById('name-input');
-
     input.addEventListener('keydown', e => {
         if (e.key === 'Enter') proceedToQuestions();
     });
-
     input.addEventListener('input', () => {
         if (input.value.trim().length > 0) {
             showActionBtn('CONTINUE', proceedToQuestions);
@@ -129,38 +290,34 @@ function setupNameSection() {
 }
 
 function showActionBtn(label, fn) {
-    const btn = document.getElementById('start-btn');
+    const btn       = document.getElementById('start-btn');
     btn.textContent = label;
     btn.classList.remove('hidden');
-    btn.onclick = fn;
+    btn.onclick     = fn;
 }
 
 function hideActionBtn() {
     document.getElementById('start-btn').classList.add('hidden');
 }
 
-// ─── QUESTIONS ────────────────────────────────────────────────────────────────
+// ─── QUESTIONS ────────────────────────────────────────────────
 function proceedToQuestions() {
     const name = document.getElementById('name-input').value.trim();
-    if (!name) {
-        document.getElementById('name-input').focus();
-        return;
-    }
+    if (!name) { document.getElementById('name-input').focus(); return; }
 
     document.getElementById('name-section').classList.add('hidden');
     hideActionBtn();
     document.getElementById('onboard-sub').textContent =
         'Answer honestly — the system rewards truth.';
 
-    currentQuestion  = 0;
-    questionAnswers  = {};
+    currentQuestion = 0;
+    questionAnswers = {};
     document.getElementById('question-section').classList.remove('hidden');
     showQuestion(0);
 }
 
 function showQuestion(index) {
     const q = ONBOARD_QUESTIONS[index];
-
     document.getElementById('q-stat').textContent =
         '[ ' + q.stat.toUpperCase() + ' ASSESSMENT ]';
     document.getElementById('q-text').textContent = q.text;
@@ -172,30 +329,79 @@ function showQuestion(index) {
     hideActionBtn();
 
     q.options.forEach((opt, i) => {
-        const btn = document.createElement('button');
-        btn.className = 'option-btn';
+        const btn       = document.createElement('button');
+        btn.className   = 'option-btn';
         btn.textContent = opt;
         btn.addEventListener('click', () => {
             optionsEl.querySelectorAll('.option-btn')
                 .forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             questionAnswers[q.stat] = i;
-
             const isLast = index === ONBOARD_QUESTIONS.length - 1;
             showActionBtn(isLast ? 'AWAKEN' : 'NEXT', () => {
-                if (isLast) {
-                    createPlayer();
-                } else {
-                    currentQuestion++;
-                    showQuestion(currentQuestion);
-                }
+                if (isLast) { runAwakenSequence(); }
+                else        { showQuestion(index + 1); }
             });
         });
         optionsEl.appendChild(btn);
     });
 }
 
-// ─── PLAYER MANAGEMENT ───────────────────────────────────────────────────────
+// ─── AWAKEN BOOT SEQUENCE ─────────────────────────────────────
+function runAwakenSequence() {
+    const name    = document.getElementById('name-input').value.trim().toUpperCase();
+    const overlay = document.getElementById('overlay-awaken');
+    overlay.classList.remove('hidden');
+
+    const bootLines = [
+        '> SCANNING PLAYER DATA...',
+        '> ASSESSING ATTRIBUTES...',
+        '> CALCULATING BASELINE...',
+        '> COMPILING STAT MATRIX...',
+        '> PROFILE CONFIRMED.'
+    ];
+
+    const linesEl  = document.getElementById('boot-lines');
+    const nameEl   = document.getElementById('boot-name');
+    const statusEl = document.getElementById('boot-status');
+    linesEl.innerHTML   = '';
+    nameEl.textContent  = '';
+    statusEl.textContent = '';
+
+    let lineIndex = 0;
+
+    function nextLine() {
+        if (lineIndex >= bootLines.length) {
+            setTimeout(() => {
+                typeText(nameEl, name, 80, () => {
+                    setTimeout(() => {
+                        typeText(statusEl, '[ AWAKENING... ]', 60, () => {
+                            setTimeout(() => {
+                                overlay.classList.add('hidden');
+                                createPlayer(name);
+                            }, 800);
+                        });
+                    }, 400);
+                });
+            }, 300);
+            return;
+        }
+        const line            = document.createElement('div');
+        line.style.opacity    = '0';
+        line.style.transition = 'opacity 0.3s ease';
+        line.textContent      = bootLines[lineIndex];
+        linesEl.appendChild(line);
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => { line.style.opacity = '1'; });
+        });
+        lineIndex++;
+        setTimeout(nextLine, 350);
+    }
+
+    nextLine();
+}
+
+// ─── PLAYER MANAGEMENT ───────────────────────────────────────
 function loadPlayer() {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
@@ -205,43 +411,57 @@ function savePlayer() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(player));
 }
 
-function createPlayer() {
-    const name = document.getElementById('name-input').value.trim().toUpperCase();
-
-    // Build stats from answer weights
+function createPlayer(name) {
     const stats = {};
     STAT_NAMES.forEach(stat => {
-        const answerIndex = questionAnswers[stat] ?? 0;
-        stats[stat] = ANSWER_WEIGHTS[answerIndex];
+        const idx   = questionAnswers[stat] ?? 0;
+        stats[stat] = ANSWER_WEIGHTS[idx];
     });
 
     player = {
         name,
         stats,
-        completedToday: [],
-        lastQuestDate:  today()
+        completedToday:  [],
+        lastQuestDate:   today(),
+        consecutiveDays: 1,
+        momentum:        1.0,
+        lastActiveDate:  today()
     };
 
     savePlayer();
-    dailyQuests = getDailyQuests(allQuests);
-    updateStatusScreen();
-    showScreen('screen-status');
+    dailyQuests = getDailyQuests(allQuests, calculateLevel());
+    showStatusScreenWithAnimation();
 }
 
-// ─── DAILY RESET ──────────────────────────────────────────────────────────────
+// ─── DAILY RESET ──────────────────────────────────────────────
 function checkDailyReset() {
-    if (player.lastQuestDate !== today()) {
-        player.completedToday = [];
-        player.lastQuestDate  = today();
-        savePlayer();
+    const todayStr = today();
+    const lastDate = player.lastQuestDate;
+    if (lastDate === todayStr) return;
+
+    const diffDays = Math.round(
+        (new Date(todayStr) - new Date(lastDate)) / 86400000
+    );
+
+    if (diffDays === 1) {
+        player.consecutiveDays = (player.consecutiveDays || 0) + 1;
+        player.momentum        = buildMomentum(player.consecutiveDays);
+    } else {
+        player.consecutiveDays = 1;
+        player.momentum        = decayMomentum(player.momentum || 1.0, diffDays - 1);
     }
+
+    player.completedToday = [];
+    player.lastQuestDate  = todayStr;
+    player.lastActiveDate = todayStr;
+    savePlayer();
 }
 
 function today() {
     return new Date().toISOString().slice(0, 10);
 }
 
-// ─── LOAD QUESTS ──────────────────────────────────────────────────────────────
+// ─── LOAD QUESTS ─────────────────────────────────────────────
 async function loadQuests() {
     try {
         const res  = await fetch('/levelup/data/quests.json');
@@ -253,84 +473,245 @@ async function loadQuests() {
     }
 }
 
-// ─── QUEST COMPLETION ────────────────────────────────────────────────────────
-function completeQuest(id, stat, xp) {
+// ─── QUEST COMPLETION ────────────────────────────────────────
+function completeQuest(id, stat, baseXP) {
     if (player.completedToday.includes(id)) return;
-    player.stats[stat] = Math.min(player.stats[stat] + xp, MAX_STAT);
+
+    const momentum    = player.momentum || 1.0;
+    const earnedAmt   = parseFloat((baseXP * momentum).toFixed(1));
+
+    // Record XP before adding so we can detect level up
+    const xpBefore = earnedXP(player.stats);
+
+    player.stats[stat] = parseFloat(
+        ((player.stats[stat] || STAT_FLOOR) + earnedAmt).toFixed(1)
+    );
     player.completedToday.push(id);
     savePlayer();
-    renderQuests(dailyQuests, player.completedToday);
+
+    // Card animation
+    const card = document.getElementById('quest-card-' + id);
+    if (card) {
+        card.classList.add('completing');
+        setTimeout(() => card.classList.remove('completing'), 400);
+    }
+
+    // Floating XP
+    showFloatingXP(id, earnedAmt);
+
+    // Sound
+    playQuestComplete();
+
+    // Check level and rank changes
+    const prevLevel = levelFromXP(xpBefore);
+    const newLevel  = calculateLevel();
+    const prevRank  = rankFromLevel(prevLevel);
+    const newRank   = rankFromLevel(newLevel);
+
+    // Re-render UI
+    renderQuests(dailyQuests, player.completedToday, player.momentum);
     updateStatusScreen();
-    flashStat(stat);
+
+    if (newRank !== prevRank) {
+        setTimeout(() => showRankUpOverlay(newRank, newLevel), 600);
+    } else if (newLevel > prevLevel) {
+        setTimeout(() => showLevelUpOverlay(newLevel), 600);
+    }
 }
 
-// ─── STATUS SCREEN ───────────────────────────────────────────────────────────
-function updateStatusScreen() {
+// ─── CALCULATIONS ────────────────────────────────────────────
+function calculateLevel() {
+    return levelFromXP(Math.max(0, earnedXP(player.stats)));
+}
+
+function calculateLuck() {
+    const total = STAT_NAMES.reduce((sum, s) => sum + (player.stats[s] || STAT_FLOOR), 0);
+    return parseFloat((total / STAT_NAMES.length).toFixed(1));
+}
+
+// ─── STATUS SCREEN ───────────────────────────────────────────
+function updateStatusScreen(animate) {
+    const level    = calculateLevel();
+    const rank     = rankFromLevel(level);
+    const title    = titleFromLevel(level);
+    const xp       = earnedXP(player.stats);
+    const xpThis   = xp - xpForLevel(level);
+    const xpNext   = xpForLevel(level + 1) - xpForLevel(level);
+    const pct      = xpNext > 0 ? Math.min(100, Math.round((xpThis / xpNext) * 100)) : 100;
+    const momentum = player.momentum || 1.0;
+
     document.getElementById('player-name').textContent  = player.name;
-    document.getElementById('player-level').textContent = calculateLevel();
+    document.getElementById('player-level').textContent = level;
+    document.getElementById('player-title').textContent = '[ ' + title + ' ]';
 
-    const title = calculateTitle();
-    const titleEl = document.getElementById('player-title');
-    titleEl.textContent = '[ ' + title + ' ]';
+    // Rank badge
+    const rankEl = document.getElementById('rank-badge');
+    rankEl.textContent = rank;
+    rankEl.className   = 'rank-badge tappable ' + rankCssClass(rank);
+    rankEl.dataset.tip = 'rank';
 
+    // Level progress
+    document.getElementById('level-progress-bar').style.width   = pct + '%';
+    document.getElementById('level-progress-label').textContent =
+        xpThis + ' / ' + xpNext + ' XP  (' + pct + '%)';
+
+    // Momentum
+    const mPct = Math.round(((momentum - 1.0) / 0.5) * 100);
+    document.getElementById('momentum-bar').style.width   = mPct + '%';
+    document.getElementById('momentum-value').textContent = momentum.toFixed(2) + 'x';
+
+    // Stats
     STAT_NAMES.forEach(stat => {
-        const val = player.stats[stat];
-        document.getElementById('val-' + stat).textContent    = val;
-        document.getElementById('bar-' + stat).style.width    = val + '%';
+        const val    = player.stats[stat] || STAT_FLOOR;
+        const dispVal = Math.floor(val);
+        // Bar scales: 10 = 0%, growing logarithmically for visual feel
+        const barPct  = Math.min(100, ((val - STAT_FLOOR) / 90) * 100);
+
+        if (animate) {
+            animateNumber('val-' + stat, 0, dispVal, 600);
+            setTimeout(() => {
+                document.getElementById('bar-' + stat).style.width = barPct + '%';
+            }, 100);
+        } else {
+            document.getElementById('val-' + stat).textContent = dispVal;
+            document.getElementById('bar-' + stat).style.width = barPct + '%';
+        }
     });
 
-    const luck = calculateLuck();
-    document.getElementById('val-luck').textContent  = luck;
-    document.getElementById('bar-luck').style.width  = luck + '%';
+    // Luck
+    const luck    = calculateLuck();
+    const luckVal = Math.floor(luck);
+    const luckPct = Math.min(100, ((luck - STAT_FLOOR) / 90) * 100);
+    if (animate) {
+        animateNumber('val-luck', 0, luckVal, 700);
+        setTimeout(() => {
+            document.getElementById('bar-luck').style.width = luckPct + '%';
+        }, 100);
+    } else {
+        document.getElementById('val-luck').textContent = luckVal;
+        document.getElementById('bar-luck').style.width = luckPct + '%';
+    }
 
     setupTooltips();
 }
 
-// ─── CALCULATIONS ────────────────────────────────────────────────────────────
-function calculateLuck() {
-    const total = STAT_NAMES.reduce((sum, s) => sum + player.stats[s], 0);
-    return Math.floor(total / STAT_NAMES.length);
+function rankCssClass(rank) {
+    const map = {
+        'F': 'rank-f', 'E': 'rank-e', 'D': 'rank-d',
+        'C': 'rank-c', 'B': 'rank-b', 'A': 'rank-a',
+        'S': 'rank-s', 'S+': 'rank-s', 'SS': 'rank-s',
+        'SS+': 'rank-s', 'SSS': 'rank-s'
+    };
+    return map[rank] || 'rank-f';
 }
 
-function calculateLevel() {
-    const avg = calculateLuck();
-    if (avg < 20) return 1;
-    if (avg < 30) return 2;
-    if (avg < 40) return 3;
-    if (avg < 50) return 4;
-    if (avg < 60) return 5;
-    if (avg < 70) return 6;
-    if (avg < 80) return 7;
-    if (avg < 90) return 8;
-    return 9;
+function showStatusScreenWithAnimation() {
+    showScreen('screen-status');
+    setTimeout(() => {
+        updateStatusScreen(true);
+        const level = calculateLevel();
+        if (level > 1) {
+            setTimeout(() => showLevelUpOverlay(level), 1500);
+        }
+    }, 200);
 }
 
-function calculateTitle() {
-    const level = calculateLevel();
-    let title   = TITLES[0].label;
-    for (const t of TITLES) {
-        if (level >= t.minLevel) title = t.label;
+// ─── ANIMATE NUMBER ──────────────────────────────────────────
+function animateNumber(elId, from, to, duration) {
+    const el    = document.getElementById(elId);
+    if (!el) return;
+    const steps = 30;
+    const step  = (to - from) / steps;
+    const delay = duration / steps;
+    let current = from;
+    let count   = 0;
+    const interval = setInterval(() => {
+        count++;
+        current += step;
+        el.textContent = Math.round(count >= steps ? to : current);
+        if (count >= steps) clearInterval(interval);
+    }, delay);
+}
+
+// ─── FLOATING XP ─────────────────────────────────────────────
+function showFloatingXP(questId, amount) {
+    const card = document.getElementById('quest-card-' + questId);
+    if (!card) return;
+    const rect        = card.getBoundingClientRect();
+    const label       = document.createElement('div');
+    label.className   = 'float-xp';
+    label.textContent = '+' + amount + ' XP';
+    label.style.left  = (rect.left + rect.width / 2 - 20) + 'px';
+    label.style.top   = (rect.top + window.scrollY) + 'px';
+    document.body.appendChild(label);
+    setTimeout(() => label.remove(), 1000);
+}
+
+// ─── LEVEL UP OVERLAY ────────────────────────────────────────
+function showLevelUpOverlay(level) {
+    playLevelUp();
+    spawnParticles('lu-particles', 20, 'var(--accent)');
+    document.getElementById('lu-level').textContent = level;
+    document.getElementById('lu-title').textContent = titleFromLevel(level);
+    document.getElementById('lu-sub').textContent   =
+        'RANK ' + rankFromLevel(level) + '  ·  KEEP GOING';
+    const overlay = document.getElementById('overlay-levelup');
+    overlay.classList.remove('hidden');
+    setTimeout(() => overlay.classList.add('hidden'), 3500);
+}
+
+// ─── RANK UP OVERLAY ─────────────────────────────────────────
+function showRankUpOverlay(rank, level) {
+    playRankUp();
+    spawnParticles('ru-particles', 35, 'var(--gold)');
+    document.getElementById('ru-rank').textContent  = rank;
+    document.getElementById('ru-title').textContent = rank + '-RANK ACHIEVED';
+    document.getElementById('ru-sub').textContent   =
+        titleFromLevel(level) + '  ·  LEVEL ' + level;
+    const overlay = document.getElementById('overlay-rankup');
+    overlay.classList.remove('hidden');
+    setTimeout(() => overlay.classList.add('hidden'), 4500);
+}
+
+// ─── PARTICLES ───────────────────────────────────────────────
+function spawnParticles(containerId, count, color) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+        const p     = document.createElement('div');
+        p.className = 'particle';
+        const angle = (360 / count) * i;
+        const dist  = 80 + Math.random() * 120;
+        const tx    = Math.cos(angle * Math.PI / 180) * dist + 'px';
+        const ty    = Math.sin(angle * Math.PI / 180) * dist + 'px';
+        p.style.cssText = `
+            background: ${color};
+            left: 50%;
+            top: 50%;
+            --tx: ${tx};
+            --ty: ${ty};
+            animation-delay: ${Math.random() * 0.3}s;
+            animation-duration: ${0.8 + Math.random() * 0.6}s;
+        `;
+        container.appendChild(p);
     }
-    return title;
 }
 
-// ─── TOOLTIPS ────────────────────────────────────────────────────────────────
+// ─── TOOLTIPS ────────────────────────────────────────────────
 function setupTooltips() {
     document.querySelectorAll('.tappable').forEach(el => {
         const fresh = el.cloneNode(true);
         el.parentNode.replaceChild(fresh, el);
-
         fresh.addEventListener('click', e => {
             e.stopPropagation();
             const tip = fresh.dataset.tip;
             if (!tip) return;
-            const box     = document.getElementById('tip-' + tip);
+            const box    = document.getElementById('tip-' + tip);
             if (!box) return;
-            const isOpen  = box.classList.contains('visible');
-
+            const isOpen = box.classList.contains('visible');
             document.querySelectorAll('.tooltip-box')
                 .forEach(b => b.classList.remove('visible'));
-
             if (!isOpen) box.classList.add('visible');
         });
     });
@@ -341,21 +722,14 @@ function setupTooltips() {
     });
 }
 
-// ─── UI HELPERS ──────────────────────────────────────────────────────────────
+// ─── UI HELPERS ──────────────────────────────────────────────
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     if (id === 'screen-quests') {
-        renderQuests(dailyQuests, player.completedToday);
+        renderQuests(dailyQuests, player.completedToday, player.momentum || 1.0);
     }
 }
 
-function flashStat(stat) {
-    const row = document.querySelector(`[data-stat="${stat}"]`);
-    if (!row) return;
-    row.style.background = '#1a3a2a';
-    setTimeout(() => { row.style.background = ''; }, 600);
-}
-
-// ─── START ───────────────────────────────────────────────────────────────────
+// ─── START ───────────────────────────────────────────────────
 init();

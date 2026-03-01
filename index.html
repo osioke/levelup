@@ -10,29 +10,70 @@
 </head>
 <body>
 
-    <!-- STATUS SCREEN -->
+    <!-- ═══════════════════════════════════════════════
+         STATUS SCREEN
+    ═══════════════════════════════════════════════ -->
     <div class="screen" id="screen-status">
+
+        <div class="sound-toggle" id="sound-toggle" title="Toggle sound">
+            <span id="sound-icon">🔇</span>
+        </div>
+
         <div class="status-header">
             <div class="player-title tappable" id="player-title" data-tip="title">
-                [ ORDINARY PERSON ]
+                [ THE BEGINNER ]
             </div>
+            <div class="rank-badge tappable rank-f" id="rank-badge" data-tip="rank">F</div>
             <h1 class="player-name" id="player-name">PLAYER</h1>
+
             <div class="player-level tappable" id="player-level-row" data-tip="level">
                 LEVEL <span id="player-level">1</span>
             </div>
+
+            <div class="level-progress-wrap">
+                <div class="level-progress-bar" id="level-progress-bar"></div>
+            </div>
+            <div class="level-progress-label" id="level-progress-label">0 / 25 XP</div>
+
+            <div class="momentum-row tappable" id="momentum-row" data-tip="momentum">
+                <span class="momentum-label">MOMENTUM</span>
+                <div class="momentum-bar-wrap">
+                    <div class="momentum-bar" id="momentum-bar"></div>
+                </div>
+                <span class="momentum-value" id="momentum-value">1.00x</span>
+            </div>
+
             <div class="tooltip-box" id="tip-title">
                 <strong>Your Title</strong>
                 Your title reflects how the world would recognise someone with your current
-                attribute levels. Everyone begins as an Ordinary Person — not as an insult,
-                but as an honest starting point. As your attributes grow through quests,
-                your title will change to reflect the person you are becoming.
+                attribute levels. Everyone begins as The Beginner — not as an insult, but
+                as an honest starting point. As your attributes grow through quests, your
+                title will change to reflect the person you are becoming.
+            </div>
+            <div class="tooltip-box" id="tip-rank">
+                <strong>Your Rank</strong>
+                Ranks follow the F → E → D → C → B → A → S progression. Your rank is
+                determined by your level — F-Rank covers Levels 1 to 15, E-Rank covers
+                16 to 30, and so on upward. Beyond Level 100, ranks extend to S+, SS,
+                SS+, and SSS — territory almost no one reaches. Each rank represents a
+                genuine, observable shift in who you are.
             </div>
             <div class="tooltip-box" id="tip-level">
                 <strong>Your Level</strong>
-                Your level is calculated from the average of all five core attributes. It
-                starts at 1 and rises as you consistently complete quests. A higher level
-                reflects broad growth across all areas — not just one. Think of it as a
-                measure of how much deliberate effort you have invested in yourself.
+                Your level is calculated from your total earned XP — every quest you
+                complete adds XP permanently. Early levels come quickly to reward momentum.
+                Later levels demand sustained effort over months and years. The progress
+                bar shows exactly how far through your current level you are. Your level
+                never decreases — all progress is yours to keep.
+            </div>
+            <div class="tooltip-box" id="tip-momentum">
+                <strong>Momentum</strong>
+                Momentum reflects the compounding effect of consistent practice. Research
+                shows that showing up regularly makes each session more effective — up to
+                50% more after two weeks of daily effort. Miss a day occasionally and it
+                barely affects you. Fall away longer and momentum returns to baseline,
+                ready to be rebuilt. Your progress is always yours to keep — momentum
+                only affects how fast you earn it.
             </div>
         </div>
 
@@ -48,9 +89,11 @@
             <div class="tooltip-box" id="tip-strength">
                 <strong>Strength</strong>
                 Your physical capability — energy, fitness, and ability to exert yourself.
-                A score of 10 is your baseline: functional and alive. Growing this toward
-                100 reflects consistent physical effort and vitality. This is not a
-                measurement of your body — it is a reflection of the effort you put into it.
+                A score of 10 is your baseline: functional and alive. This number grows
+                without limit as you complete Strength quests — each point above 10
+                represents real effort invested in your physical self. There is no ceiling
+                because human physical potential has no ceiling either.
+                <em class="tip-flavour">"Still figuring out where the gym is."</em>
             </div>
 
             <div class="stat-row tappable" data-stat="intelligence" data-tip="intelligence">
@@ -63,10 +106,11 @@
             <div class="tooltip-box" id="tip-intelligence">
                 <strong>Intelligence</strong>
                 Your capacity to learn, reason, and decide well. A score of 10 means you
-                have a working mind and the ability to grow. Completing Intelligence quests
-                pushes this toward 100 — reflecting someone who learns deliberately and
-                thinks carefully. This is not an IQ score. It measures intellectual
-                engagement.
+                have a working mind and the ability to grow. Every Intelligence quest
+                completed adds to this permanently — there is no upper limit because
+                learning never stops. This is not an IQ score. It measures deliberate
+                intellectual engagement over time.
+                <em class="tip-flavour">"Knows things. Working on knowing more things."</em>
             </div>
 
             <div class="stat-row tappable" data-stat="agility" data-tip="agility">
@@ -79,9 +123,10 @@
             <div class="tooltip-box" id="tip-agility">
                 <strong>Agility</strong>
                 How well you adapt to change and the unexpected. A score of 10 means you
-                can function when life shifts. Growing toward 100 means you navigate
-                disruption with ease and find opportunity in it. Agility quests train you
-                to break patterns and respond rather than react.
+                can function when life shifts. Growing this means you navigate disruption
+                with increasing ease and find opportunity in chaos. Agility quests train
+                you to break patterns and respond rather than react.
+                <em class="tip-flavour">"Flexible. Mostly in schedule, working on the rest."</em>
             </div>
 
             <div class="stat-row tappable" data-stat="endurance" data-tip="endurance">
@@ -94,9 +139,10 @@
             <div class="tooltip-box" id="tip-endurance">
                 <strong>Endurance</strong>
                 Your ability to sustain effort over time — physically, mentally, emotionally.
-                A score of 10 means you can get through a day. Growing toward 100 means you
+                A score of 10 means you can get through a day. Growing this means you
                 persist through difficulty without burning out. Sleep, consistency, and
-                finishing what you start are the foundations here.
+                finishing what you start are the foundations of this attribute.
+                <em class="tip-flavour">"Finishes most things. The rest are 'in progress'."</em>
             </div>
 
             <div class="stat-row tappable" data-stat="charisma" data-tip="charisma">
@@ -109,9 +155,10 @@
             <div class="tooltip-box" id="tip-charisma">
                 <strong>Charisma</strong>
                 Your social presence — how you connect, influence, and build relationships.
-                A score of 10 means you are capable of human connection. Growing toward 100
-                means people are drawn to you, trust you, and want to work with you.
-                Charisma quests build your network and deepen genuine communication.
+                A score of 10 means you are capable of human connection. Growing this means
+                people are drawn to you, trust you, and want to work with you. Charisma
+                quests build your network and deepen genuine communication.
+                <em class="tip-flavour">"Likeable. People remember their name most of the time."</em>
             </div>
 
             <div class="luck-divider"></div>
@@ -125,10 +172,12 @@
             </div>
             <div class="tooltip-box" id="tip-luck">
                 <strong>Luck</strong>
-                Luck cannot be raised directly — it is calculated automatically as the
-                average of all your other attributes. This is intentional. What people
-                experience as luck is largely preparation, awareness, resilience, and strong
-                relationships. Grow your core attributes and your luck rises with them.
+                Luck cannot be raised directly — it is the average of all your other
+                attributes. This is intentional. What people experience as luck is largely
+                preparation, awareness, resilience, and strong relationships. Grow your
+                core attributes and your luck rises with them. A high Luck score means
+                you have become someone the world calls fortunate — because you earned it.
+                <em class="tip-flavour">"Lucky? Debatable. Getting luckier? Absolutely."</em>
             </div>
 
         </div>
@@ -138,7 +187,9 @@
         </button>
     </div>
 
-    <!-- QUESTS SCREEN -->
+    <!-- ═══════════════════════════════════════════════
+         QUESTS SCREEN
+    ═══════════════════════════════════════════════ -->
     <div class="screen" id="screen-quests">
         <div class="quest-header tappable" onclick="showScreen('screen-status')">
             <h2>DAILY QUESTS</h2>
@@ -150,7 +201,9 @@
         </div>
     </div>
 
-    <!-- ONBOARDING SCREEN -->
+    <!-- ═══════════════════════════════════════════════
+         ONBOARDING SCREEN
+    ═══════════════════════════════════════════════ -->
     <div class="screen active" id="screen-onboarding">
         <div class="onboarding-box">
             <div class="player-title">[ SYSTEM ]</div>
@@ -176,6 +229,45 @@
             </div>
 
             <button class="nav-btn hidden" id="start-btn">AWAKEN</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         LEVEL UP OVERLAY
+    ═══════════════════════════════════════════════ -->
+    <div class="overlay hidden" id="overlay-levelup">
+        <div class="overlay-content">
+            <div class="overlay-system">[ SYSTEM ]</div>
+            <div class="overlay-headline">LEVEL UP</div>
+            <div class="overlay-level" id="lu-level">2</div>
+            <div class="overlay-title" id="lu-title">THE MOTIVATED</div>
+            <div class="overlay-sub" id="lu-sub"></div>
+            <div class="overlay-particles" id="lu-particles"></div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         RANK UP OVERLAY
+    ═══════════════════════════════════════════════ -->
+    <div class="overlay hidden" id="overlay-rankup">
+        <div class="overlay-content rankup-content">
+            <div class="overlay-system">[ SYSTEM ]</div>
+            <div class="overlay-headline">RANK UP</div>
+            <div class="overlay-rank-letter" id="ru-rank">E</div>
+            <div class="overlay-title" id="ru-title">E-RANK ACHIEVED</div>
+            <div class="overlay-sub" id="ru-sub"></div>
+            <div class="overlay-particles" id="ru-particles"></div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         AWAKEN BOOT OVERLAY
+    ═══════════════════════════════════════════════ -->
+    <div class="overlay hidden" id="overlay-awaken">
+        <div class="overlay-content awaken-content">
+            <div class="boot-lines" id="boot-lines"></div>
+            <div class="boot-name" id="boot-name"></div>
+            <div class="boot-status" id="boot-status"></div>
         </div>
     </div>
 

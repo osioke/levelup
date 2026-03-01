@@ -1,19 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
 
+/* ── VARIABLES ─────────────────────────────────────────────── */
 :root {
-    --bg: #0f0f1a;
-    --panel: #1a1a2e;
-    --border: #2a2a4a;
-    --accent: #4fc3f7;
+    --bg:         #0f0f1a;
+    --panel:      #1a1a2e;
+    --border:     #2a2a4a;
+    --accent:     #4fc3f7;
     --accent-dim: #1a4a6a;
-    --luck: #ffd700;
-    --luck-dim: #4a3a00;
-    --text: #c8d6e5;
-    --text-dim: #5a6a7a;
-    --green: #00e676;
-    --red: #ff5252;
+    --luck:       #ffd700;
+    --luck-dim:   #4a3a00;
+    --text:       #c8d6e5;
+    --text-dim:   #5a6a7a;
+    --green:      #00e676;
+    --red:        #ff5252;
+    --gold:       #ffd700;
+    --purple:     #ce93d8;
 }
 
+/* ── RESET ──────────────────────────────────────────────────── */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
@@ -27,26 +31,95 @@ body {
     padding: 20px;
 }
 
-/* ── SCREENS ── */
-.screen { display: none; width: 100%; max-width: 480px; animation: fadeIn 0.3s ease; }
+/* ── SCREENS ────────────────────────────────────────────────── */
+.screen {
+    display: none;
+    width: 100%;
+    max-width: 480px;
+    animation: fadeIn 0.4s ease;
+    position: relative;
+}
 .screen.active { display: block; }
 .hidden { display: none !important; }
 
+/* ── KEYFRAMES ──────────────────────────────────────────────── */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── TAPPABLE ── */
-.tappable { cursor: pointer; }
-.tappable:hover { opacity: 0.85; }
+@keyframes floatUp {
+    0%   { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-60px) scale(1.3); }
+}
 
-/* ── STATUS HEADER ── */
+@keyframes pulse {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.03); }
+    100% { transform: scale(1); }
+}
+
+@keyframes glowPulse {
+    0%, 100% { text-shadow: 0 0 10px currentColor, 0 0 20px currentColor; }
+    50%       { text-shadow: 0 0 20px currentColor, 0 0 40px currentColor, 0 0 60px currentColor; }
+}
+
+@keyframes scaleIn {
+    0%   { opacity: 0; transform: scale(0.3); }
+    60%  { transform: scale(1.1); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes particleBurst {
+    0%   { opacity: 1; transform: translate(0, 0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
+}
+
+@keyframes scanline {
+    0%   { top: -10%; }
+    100% { top: 110%; }
+}
+
+@keyframes rankGlow {
+    0%, 100% {
+        text-shadow: 0 0 20px var(--gold), 0 0 40px var(--gold);
+        transform: scale(1);
+    }
+    50% {
+        text-shadow: 0 0 40px var(--gold), 0 0 80px var(--gold), 0 0 120px var(--gold);
+        transform: scale(1.05);
+    }
+}
+
+/* ── TAPPABLE ───────────────────────────────────────────────── */
+.tappable { cursor: pointer; transition: opacity 0.15s; }
+.tappable:hover { opacity: 0.8; }
+
+/* ── SOUND TOGGLE ───────────────────────────────────────────── */
+.sound-toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    z-index: 10;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+.sound-toggle:hover { opacity: 1; }
+
+/* ── STATUS HEADER ──────────────────────────────────────────── */
 .status-header {
     text-align: center;
     border: 1px solid var(--border);
     background: var(--panel);
-    padding: 20px;
+    padding: 20px 20px 14px;
     margin-bottom: 12px;
     position: relative;
 }
@@ -56,20 +129,114 @@ body {
     color: var(--accent);
     font-size: 0.75rem;
     letter-spacing: 3px;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
+    display: inline-block;
 }
 
-.player-name { font-size: 2rem; font-weight: 700; letter-spacing: 4px; color: #fff; }
+/* ── RANK BADGE ─────────────────────────────────────────────── */
+.rank-badge {
+    display: inline-block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border: 1px solid var(--text-dim);
+    color: var(--text-dim);
+    padding: 1px 6px;
+    margin-left: 8px;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+}
 
-.player-level-row {
+.rank-badge.rank-s { border-color: var(--gold); color: var(--gold); animation: rankGlow 2s ease-in-out infinite; }
+.rank-badge.rank-a { border-color: var(--purple); color: var(--purple); }
+.rank-badge.rank-b { border-color: #ef5350; color: #ef5350; }
+.rank-badge.rank-c { border-color: #ff9800; color: #ff9800; }
+.rank-badge.rank-d { border-color: var(--green); color: var(--green); }
+.rank-badge.rank-e { border-color: var(--accent); color: var(--accent); }
+.rank-badge.rank-f { border-color: var(--text-dim); color: var(--text-dim); }
+
+.player-name {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: #fff;
+    margin: 6px 0 4px;
+}
+
+.player-level {
     font-family: 'Share Tech Mono', monospace;
     color: var(--text-dim);
     font-size: 0.85rem;
     letter-spacing: 2px;
-    margin-top: 6px;
 }
 
-/* ── TOOLTIP BOX ── */
+/* ── LEVEL PROGRESS BAR ─────────────────────────────────────── */
+.level-progress-wrap {
+    background: var(--border);
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 8px 0 4px;
+}
+
+.level-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.8s ease;
+}
+
+.level-progress-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+
+/* ── MOMENTUM ───────────────────────────────────────────────── */
+.momentum-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 46px;
+    align-items: center;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+}
+
+.momentum-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+}
+
+.momentum-bar-wrap {
+    background: var(--border);
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.momentum-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4fc3f7, #00e676);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 1s ease;
+}
+
+.momentum-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--green);
+    text-align: right;
+}
+
+/* ── TOOLTIP BOX ────────────────────────────────────────────── */
 .tooltip-box {
     display: none;
     background: #12122a;
@@ -94,7 +261,17 @@ body {
     letter-spacing: 1px;
 }
 
-/* ── STAT BLOCK ── */
+.tip-flavour {
+    display: block;
+    margin-top: 8px;
+    color: var(--text-dim);
+    font-style: italic;
+    font-size: 0.78rem;
+    border-top: 1px solid var(--border);
+    padding-top: 6px;
+}
+
+/* ── STAT BLOCK ─────────────────────────────────────────────── */
 .stat-block {
     border: 1px solid var(--border);
     background: var(--panel);
@@ -104,11 +281,12 @@ body {
 
 .stat-row {
     display: grid;
-    grid-template-columns: 130px 1fr 40px;
+    grid-template-columns: 130px 1fr 50px;
     align-items: center;
     gap: 12px;
     padding: 8px 0;
     border-bottom: 1px solid var(--border);
+    transition: background 0.3s ease;
 }
 
 .stat-row:last-child { border-bottom: none; }
@@ -120,14 +298,19 @@ body {
     color: var(--text-dim);
 }
 
-.stat-bar-wrap { background: var(--border); height: 6px; border-radius: 3px; overflow: hidden; }
+.stat-bar-wrap {
+    background: var(--border);
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+}
 
 .stat-bar {
     height: 100%;
     background: var(--accent);
     border-radius: 3px;
     width: 10%;
-    transition: width 0.6s ease;
+    transition: width 0.7s ease;
 }
 
 .stat-value {
@@ -137,14 +320,27 @@ body {
     text-align: right;
 }
 
-/* ── LUCK ── */
+/* ── LUCK ───────────────────────────────────────────────────── */
 .luck-divider { height: 1px; background: var(--luck-dim); margin: 8px 0; }
 .luck-row .stat-label { color: var(--luck); }
 .luck-row .stat-value { color: var(--luck); }
 .luck-bar { background: var(--luck) !important; }
 #tip-luck strong { color: var(--luck); }
 
-/* ── BUTTONS ── */
+/* ── FLOATING XP LABEL ──────────────────────────────────────── */
+.float-xp {
+    position: fixed;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--green);
+    pointer-events: none;
+    z-index: 1000;
+    animation: floatUp 0.9s ease forwards;
+    white-space: nowrap;
+    text-shadow: 0 0 8px var(--green);
+}
+
+/* ── BUTTONS ────────────────────────────────────────────────── */
 .nav-btn {
     width: 100%;
     padding: 14px;
@@ -170,7 +366,7 @@ body {
 
 .nav-btn.secondary:hover { border-color: var(--accent); color: var(--accent); }
 
-/* ── BACK LINK ── */
+/* ── BACK LINK ──────────────────────────────────────────────── */
 .back-link {
     display: block;
     text-align: center;
@@ -186,7 +382,7 @@ body {
 
 .back-link:hover { color: var(--accent); }
 
-/* ── QUEST SCREEN ── */
+/* ── QUEST SCREEN ───────────────────────────────────────────── */
 .quest-header {
     text-align: center;
     border: 1px solid var(--border);
@@ -220,12 +416,13 @@ body {
     padding: 16px;
     display: grid;
     grid-template-columns: 1fr auto;
-    align-items: center;
+    align-items: start;
     gap: 12px;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.3s ease, opacity 0.3s ease;
 }
 
-.quest-card.completed { border-color: var(--green); opacity: 0.6; }
+.quest-card.completed { border-color: var(--green); opacity: 0.55; }
+.quest-card.completing { animation: pulse 0.4s ease; }
 
 .quest-card-left .quest-stat {
     font-family: 'Share Tech Mono', monospace;
@@ -235,13 +432,27 @@ body {
     margin-bottom: 4px;
 }
 
-.quest-card-left .quest-title { font-size: 1rem; font-weight: 600; color: #fff; margin-bottom: 2px; }
+.quest-card-left .quest-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 2px;
+}
+
 .quest-card-left .quest-desc { font-size: 0.8rem; color: var(--text-dim); }
 
 .quest-xp {
     font-family: 'Share Tech Mono', monospace;
     font-size: 0.7rem;
     color: var(--green);
+    text-align: right;
+    white-space: nowrap;
+}
+
+.quest-xp-effective {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
     text-align: right;
     white-space: nowrap;
 }
@@ -261,9 +472,13 @@ body {
 }
 
 .complete-btn:hover { background: var(--green); color: var(--bg); }
-.complete-btn:disabled { border-color: var(--border); color: var(--text-dim); cursor: not-allowed; }
+.complete-btn:disabled {
+    border-color: var(--border);
+    color: var(--text-dim);
+    cursor: not-allowed;
+}
 
-/* ── ONBOARDING ── */
+/* ── ONBOARDING ─────────────────────────────────────────────── */
 .onboarding-box {
     border: 1px solid var(--border);
     background: var(--panel);
@@ -285,6 +500,7 @@ body {
     font-size: 0.95rem;
     margin-bottom: 20px;
     min-height: 1.4em;
+    line-height: 1.5;
 }
 
 #name-input {
@@ -303,7 +519,7 @@ body {
 
 #name-input:focus { border-color: var(--accent); }
 
-/* ── QUESTIONS ── */
+/* ── QUESTIONS ──────────────────────────────────────────────── */
 .question-box { margin-bottom: 20px; }
 
 .question-stat {
@@ -341,7 +557,11 @@ body {
 }
 
 .option-btn:hover { border-color: var(--accent); color: var(--accent); }
-.option-btn.selected { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+.option-btn.selected {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    color: var(--accent);
+}
 
 .question-progress {
     font-family: 'Share Tech Mono', monospace;
@@ -349,4 +569,147 @@ body {
     color: var(--text-dim);
     letter-spacing: 2px;
     margin-top: 8px;
+}
+
+/* ── OVERLAYS ───────────────────────────────────────────────── */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 8, 20, 0.96);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    animation: fadeIn 0.3s ease;
+    overflow: hidden;
+}
+
+.overlay.hidden { display: none; }
+
+.overlay-content {
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    padding: 20px;
+}
+
+.overlay-system {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 4px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    animation: slideInUp 0.4s ease 0.1s both;
+}
+
+.overlay-headline {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 6px;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    animation: slideInUp 0.4s ease 0.2s both;
+}
+
+.overlay-level {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 5rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 16px;
+    animation: scaleIn 0.6s ease 0.4s both, glowPulse 2s ease 1s infinite;
+}
+
+.overlay-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #fff;
+    margin-bottom: 12px;
+    animation: slideInUp 0.4s ease 0.8s both;
+}
+
+.overlay-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    animation: slideInUp 0.4s ease 1s both;
+}
+
+/* ── RANK UP OVERLAY ────────────────────────────────────────── */
+.rankup-content .overlay-rank-letter {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 7rem;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 16px;
+    animation: scaleIn 0.6s ease 0.4s both, rankGlow 1.5s ease 1s infinite;
+}
+
+/* ── AWAKEN BOOT OVERLAY ────────────────────────────────────── */
+.awaken-content {
+    width: 100%;
+    max-width: 400px;
+    text-align: left;
+    padding: 20px;
+}
+
+.boot-lines {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    line-height: 2;
+    margin-bottom: 20px;
+    min-height: 120px;
+}
+
+.boot-name {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 2rem;
+    color: #fff;
+    letter-spacing: 4px;
+    text-align: center;
+    margin-bottom: 12px;
+    animation: glowPulse 1.5s ease infinite;
+}
+
+.boot-status {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--green);
+    letter-spacing: 3px;
+    text-align: center;
+}
+
+/* ── OVERLAY PARTICLES ──────────────────────────────────────── */
+.overlay-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: -1;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: particleBurst 1.2s ease forwards;
+}
+
+.overlay::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: rgba(79, 195, 247, 0.08);
+    animation: scanline 3s linear infinite;
+    pointer-events: none;
 }

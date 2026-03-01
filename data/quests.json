@@ -3,6 +3,7 @@
         {
             "id": "str_01",
             "stat": "strength",
+            "tier": 1,
             "title": "Move Your Body",
             "desc": "Do at least 20 minutes of physical activity today.",
             "xp": 3
@@ -10,6 +11,7 @@
         {
             "id": "str_02",
             "stat": "strength",
+            "tier": 1,
             "title": "Eat Well Once",
             "desc": "Have one genuinely nutritious, proper meal today.",
             "xp": 2
@@ -17,13 +19,31 @@
         {
             "id": "str_03",
             "stat": "strength",
+            "tier": 1,
             "title": "Early Rise",
             "desc": "Wake up at least 30 minutes earlier than usual.",
             "xp": 2
         },
         {
+            "id": "str_04",
+            "stat": "strength",
+            "tier": 2,
+            "title": "Structured Workout",
+            "desc": "Complete a 30-minute workout with a defined plan — not just a walk.",
+            "xp": 4
+        },
+        {
+            "id": "str_05",
+            "stat": "strength",
+            "tier": 2,
+            "title": "Fuel With Intent",
+            "desc": "Plan and prepare all your meals today rather than deciding in the moment.",
+            "xp": 3
+        },
+        {
             "id": "int_01",
             "stat": "intelligence",
+            "tier": 1,
             "title": "Learn Something New",
             "desc": "Read or study something outside your comfort zone for 15 minutes.",
             "xp": 3
@@ -31,6 +51,7 @@
         {
             "id": "int_02",
             "stat": "intelligence",
+            "tier": 1,
             "title": "Solve a Problem",
             "desc": "Identify one problem you have been avoiding and think it through properly.",
             "xp": 3
@@ -38,13 +59,31 @@
         {
             "id": "int_03",
             "stat": "intelligence",
+            "tier": 1,
             "title": "Reflect in Writing",
             "desc": "Write down three things you observed or learnt today.",
             "xp": 2
         },
         {
+            "id": "int_04",
+            "stat": "intelligence",
+            "tier": 2,
+            "title": "Go Deep",
+            "desc": "Spend 45 minutes studying one topic with full focus — no switching.",
+            "xp": 4
+        },
+        {
+            "id": "int_05",
+            "stat": "intelligence",
+            "tier": 2,
+            "title": "Teach It Back",
+            "desc": "Explain something you recently learnt to another person clearly.",
+            "xp": 4
+        },
+        {
             "id": "agi_01",
             "stat": "agility",
+            "tier": 1,
             "title": "Break Your Routine",
             "desc": "Change one small but deliberate thing about your daily routine.",
             "xp": 2
@@ -52,6 +91,7 @@
         {
             "id": "agi_02",
             "stat": "agility",
+            "tier": 1,
             "title": "Respond, Don't React",
             "desc": "When something unexpected happens today, pause and respond calmly.",
             "xp": 3
@@ -59,13 +99,31 @@
         {
             "id": "agi_03",
             "stat": "agility",
+            "tier": 1,
             "title": "Try a New Approach",
             "desc": "Do a familiar task in a completely different way than usual.",
             "xp": 2
         },
         {
+            "id": "agi_04",
+            "stat": "agility",
+            "tier": 2,
+            "title": "Embrace the Curveball",
+            "desc": "Seek out a situation you normally avoid and navigate it calmly.",
+            "xp": 4
+        },
+        {
+            "id": "agi_05",
+            "stat": "agility",
+            "tier": 2,
+            "title": "Plan B Ready",
+            "desc": "For your most important task today, prepare a backup plan before starting.",
+            "xp": 3
+        },
+        {
             "id": "end_01",
             "stat": "endurance",
+            "tier": 1,
             "title": "Sleep on Time",
             "desc": "Get into bed before midnight and aim for at least 7 hours of sleep.",
             "xp": 3
@@ -73,6 +131,7 @@
         {
             "id": "end_02",
             "stat": "endurance",
+            "tier": 1,
             "title": "Finish What You Started",
             "desc": "Push through one task you felt like quitting today.",
             "xp": 3
@@ -80,13 +139,31 @@
         {
             "id": "end_03",
             "stat": "endurance",
+            "tier": 1,
             "title": "No Complaints",
             "desc": "Go the entire day without complaining about anything, even mentally.",
             "xp": 2
         },
         {
+            "id": "end_04",
+            "stat": "endurance",
+            "tier": 2,
+            "title": "Deep Work Block",
+            "desc": "Work on one important task for 90 minutes without interruption.",
+            "xp": 4
+        },
+        {
+            "id": "end_05",
+            "stat": "endurance",
+            "tier": 2,
+            "title": "Discomfort on Purpose",
+            "desc": "Do something physically or mentally uncomfortable for growth today.",
+            "xp": 4
+        },
+        {
             "id": "cha_01",
             "stat": "charisma",
+            "tier": 1,
             "title": "Meaningful Conversation",
             "desc": "Have one genuine, focused conversation with another person today.",
             "xp": 3
@@ -94,6 +171,7 @@
         {
             "id": "cha_02",
             "stat": "charisma",
+            "tier": 1,
             "title": "Reconnect",
             "desc": "Reach out to someone in your network you haven't spoken to in a while.",
             "xp": 3
@@ -101,9 +179,26 @@
         {
             "id": "cha_03",
             "stat": "charisma",
+            "tier": 1,
             "title": "Give Genuine Praise",
             "desc": "Give someone a sincere, specific compliment or word of appreciation today.",
             "xp": 2
+        },
+        {
+            "id": "cha_04",
+            "stat": "charisma",
+            "tier": 2,
+            "title": "Help Someone Solve a Problem",
+            "desc": "Offer genuine, useful help to someone facing a challenge today.",
+            "xp": 4
+        },
+        {
+            "id": "cha_05",
+            "stat": "charisma",
+            "tier": 2,
+            "title": "Initiate Something Social",
+            "desc": "Organise or propose a meetup, call, or collaboration with someone.",
+            "xp": 4
         }
     ]
 }
