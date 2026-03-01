@@ -1,0 +1,109 @@
+{
+    "quests": [
+        {
+            "id": "str_01",
+            "stat": "strength",
+            "title": "Move Your Body",
+            "desc": "Do at least 20 minutes of physical activity today.",
+            "xp": 3
+        },
+        {
+            "id": "str_02",
+            "stat": "strength",
+            "title": "Eat Well Once",
+            "desc": "Have one genuinely nutritious, proper meal today.",
+            "xp": 2
+        },
+        {
+            "id": "str_03",
+            "stat": "strength",
+            "title": "Early Rise",
+            "desc": "Wake up at least 30 minutes earlier than usual.",
+            "xp": 2
+        },
+        {
+            "id": "int_01",
+            "stat": "intelligence",
+            "title": "Learn Something New",
+            "desc": "Read or study something outside your comfort zone for 15 minutes.",
+            "xp": 3
+        },
+        {
+            "id": "int_02",
+            "stat": "intelligence",
+            "title": "Solve a Problem",
+            "desc": "Identify one problem you have been avoiding and think it through properly.",
+            "xp": 3
+        },
+        {
+            "id": "int_03",
+            "stat": "intelligence",
+            "title": "Reflect in Writing",
+            "desc": "Write down three things you observed or learnt today.",
+            "xp": 2
+        },
+        {
+            "id": "agi_01",
+            "stat": "agility",
+            "title": "Break Your Routine",
+            "desc": "Change one small but deliberate thing about your daily routine.",
+            "xp": 2
+        },
+        {
+            "id": "agi_02",
+            "stat": "agility",
+            "title": "Respond, Don't React",
+            "desc": "When something unexpected happens today, pause and respond calmly.",
+            "xp": 3
+        },
+        {
+            "id": "agi_03",
+            "stat": "agility",
+            "title": "Try a New Approach",
+            "desc": "Do a familiar task in a completely different way than usual.",
+            "xp": 2
+        },
+        {
+            "id": "end_01",
+            "stat": "endurance",
+            "title": "Sleep on Time",
+            "desc": "Get into bed before midnight and aim for at least 7 hours of sleep.",
+            "xp": 3
+        },
+        {
+            "id": "end_02",
+            "stat": "endurance",
+            "title": "Finish What You Started",
+            "desc": "Push through one task you felt like quitting today.",
+            "xp": 3
+        },
+        {
+            "id": "end_03",
+            "stat": "endurance",
+            "title": "No Complaints",
+            "desc": "Go the entire day without complaining about anything, even mentally.",
+            "xp": 2
+        },
+        {
+            "id": "cha_01",
+            "stat": "charisma",
+            "title": "Meaningful Conversation",
+            "desc": "Have one genuine, focused conversation with another person today.",
+            "xp": 3
+        },
+        {
+            "id": "cha_02",
+            "stat": "charisma",
+            "title": "Reconnect",
+            "desc": "Reach out to someone in your network you haven't spoken to in a while.",
+            "xp": 3
+        },
+        {
+            "id": "cha_03",
+            "stat": "charisma",
+            "title": "Give Genuine Praise",
+            "desc": "Give someone a sincere, specific compliment or word of appreciation today.",
+            "xp": 2
+        }
+    ]
+}
