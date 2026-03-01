@@ -199,7 +199,15 @@ async function init() {
     allQuests = await loadQuests();
     player    = loadPlayer();
 
-    soundEnabled = localStorage.getItem('levelup_sound') === '1';
+    const savedSound = localStorage.getItem('levelup_sound');
+    if (savedSound === null) {
+        // First visit — default to on and show prompt
+        soundEnabled = true;
+        localStorage.setItem('levelup_sound', '1');
+        showSoundPrompt();
+    } else {
+        soundEnabled = savedSound === '1';
+    }
     document.getElementById('sound-icon').textContent = soundEnabled ? '🔊' : '🔇';
     document.getElementById('sound-toggle').addEventListener('click', toggleSound);
 
@@ -244,7 +252,7 @@ function registerServiceWorker() {
 // ─── TYPEWRITER ───────────────────────────────────────────────
 function runTypewriter() {
     const heading = 'INITIALISING PLAYER DATA';
-    const subtext = 'The system reads only what is true. Your answers shape your starting point.';
+    const subtext = 'The system reads only what is true. Your answers shape your destiny.';
     const headEl  = document.getElementById('onboard-heading');
     const subEl   = document.getElementById('onboard-sub');
 
@@ -540,6 +548,8 @@ function updateStatusScreen(animate) {
     const pct      = xpNext > 0 ? Math.min(100, Math.round((xpThis / xpNext) * 100)) : 100;
     const momentum = player.momentum || 1.0;
 
+    setupTooltips();
+
     document.getElementById('player-name').textContent  = player.name;
     document.getElementById('player-level').textContent = level;
     document.getElementById('player-title').textContent = '[ ' + title + ' ]';
@@ -591,8 +601,6 @@ function updateStatusScreen(animate) {
         document.getElementById('val-luck').textContent = luckVal;
         document.getElementById('bar-luck').style.width = luckPct + '%';
     }
-
-    setupTooltips();
 }
 
 function rankCssClass(rank) {
@@ -614,6 +622,44 @@ function showStatusScreenWithAnimation() {
             setTimeout(() => showLevelUpOverlay(level), 1500);
         }
     }, 200);
+}
+
+// ─── SOUND ─────────────────────────────────────────
+function showSoundPrompt() {
+    const prompt = document.createElement('div');
+    prompt.id = 'sound-prompt';
+    prompt.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1a1a2e;
+        border: 1px solid #4fc3f7;
+        color: #c8d6e5;
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 0.7rem;
+        letter-spacing: 1px;
+        padding: 12px 20px;
+        z-index: 9999;
+        text-align: center;
+        max-width: 320px;
+        width: 90%;
+        animation: fadeIn 0.4s ease;
+        line-height: 1.6;
+    `;
+    prompt.innerHTML = `
+        🔊 SOUND IS ON<br>
+        <span style="color:#5a6a7a;font-size:0.65rem;">
+            Enables immersive audio feedback.<br>
+            Toggle anytime with the icon above.
+        </span>
+    `;
+    document.body.appendChild(prompt);
+    setTimeout(() => {
+        prompt.style.transition = 'opacity 0.5s ease';
+        prompt.style.opacity = '0';
+        setTimeout(() => prompt.remove(), 500);
+    }, 3000);
 }
 
 // ─── ANIMATE NUMBER ──────────────────────────────────────────
@@ -653,8 +699,8 @@ function showLevelUpOverlay(level) {
     spawnParticles('lu-particles', 20, 'var(--accent)');
     document.getElementById('lu-level').textContent = level;
     document.getElementById('lu-title').textContent = titleFromLevel(level);
-    document.getElementById('lu-sub').textContent   =
-        'RANK ' + rankFromLevel(level) + '  ·  KEEP GOING';
+    document.getElementById('lu-sub').textContent =
+        rankFromLevel(level) + '-RANK  ·  KEEP GOING';
     const overlay = document.getElementById('overlay-levelup');
     overlay.classList.remove('hidden');
     setTimeout(() => overlay.classList.add('hidden'), 3500);
