@@ -65,7 +65,7 @@
             "stat": "strength",
             "tier": 2,
             "title": "Progressive Overload",
-            "desc": "Do today's workout and make it slightly harder than last time — one more rep, one more minute, slightly less rest. Log it so you can beat it next time.",
+            "desc": "Do today's workout and make it slightly harder than last time — one more rep, one more minute, slightly less rest. Log it so you can beat it next time. If you don't have an established workout yet, do 3 sets of any bodyweight movement — press-ups, squats, or lunges — note your reps, and that becomes your baseline to beat.",
             "model": "Progressive Overload (Vladimir Zatsiorsky)",
             "why": "Soviet sports scientist Zatsiorsky established that muscles adapt only when consistently asked to do slightly more than before. Comfort produces maintenance. Graduated challenge produces growth.",
             "xp": 4
@@ -95,7 +95,7 @@
             "stat": "strength",
             "tier": 2,
             "title": "Zone 2 Cardio",
-            "desc": "Do 30 minutes of cardio at a pace where you can hold a conversation but are clearly working — roughly 60 to 70% of your maximum heart rate. Sustain it.",
+            "desc": "Do 30 minutes of cardio at a pace where you can hold a conversation but are clearly working. That is your Zone 2. If you want a precise check: you should be able to speak in full sentences but not sing. Sustain this pace for the full 30 minutes — walking briskly, cycling, jogging, or rowing all work equally well.",
             "model": "Zone 2 Training (Dr Iñigo San-Millán, University of Colorado)",
             "why": "San-Millán's research shows Zone 2 cardio is the most efficient way to build mitochondrial density — the cellular engine of long-term energy, health, and longevity.",
             "xp": 4
@@ -115,7 +115,7 @@
             "stat": "strength",
             "tier": 3,
             "title": "7-Day Movement Log",
-            "desc": "For 7 days, log every intentional movement — duration, type, how you felt before and after. Mark complete on day 7. The act of measurement changes the behaviour.",
+            "desc": "Start a 7-day movement log today. Set up wherever you will track it — a notes app, a notebook, anything you will actually use. Log today's movement: duration, type, and how you felt before and after. Commit to logging every intentional movement for the next 7 days. Mark complete now for beginning. The act of measurement changes the behaviour — starting is the whole point.",
             "model": "Hawthorne Effect (Roethlisberger & Dickson)",
             "why": "Research consistently shows that people who track a behaviour improve it — not because of the tracking itself, but because observation creates the awareness that precedes all deliberate change.",
             "xp": 6
@@ -145,7 +145,7 @@
             "stat": "strength",
             "tier": 3,
             "title": "3-Day Consistency Test",
-            "desc": "Complete the same physical practice — however small — for 3 consecutive days. It can be 10 minutes of walking. The constraint is consistency, not intensity. Mark complete on day 3.",
+            "desc": "Choose a physical practice — however small — that you will repeat for 3 consecutive days starting today. It can be 10 minutes of walking, a stretch routine, anything. Do your first session right now, then write down what it is and where you will do it tomorrow. Mark complete for committing and beginning. The constraint is consistency, not intensity — same thing, same context, three days running.",
             "model": "Habit Loop Formation (Phillippa Lally, UCL)",
             "why": "Lally's research found that consistent repetition in the same context is the primary driver of automaticity. Three days begins the neural pathway. Sixty-six days on average solidifies it into a lasting habit.",
             "xp": 6
@@ -215,7 +215,7 @@
             "stat": "intelligence",
             "tier": 2,
             "title": "Deliberate Practice Session",
-            "desc": "Identify the one skill or knowledge area you most want to develop. Spend 45 minutes on it with full focus — working at the edge of your current ability, not in your comfort zone.",
+            "desc": "Identify the one skill or knowledge area you most want to develop. Spend 45 minutes on it with full focus — working at the edge of your current ability, not in your comfort zone. The edge means it should feel slightly difficult: not impossible, but not easy either. If it feels completely comfortable, you have stopped growing. Push one step further.",
             "model": "Deliberate Practice (Anders Ericsson, Florida State)",
             "why": "Ericsson studied world-class performers for decades and found that what separates experts is not talent or total hours — it is focused practice at the precise edge of current ability, with immediate feedback.",
             "xp": 4
@@ -265,7 +265,7 @@
             "stat": "intelligence",
             "tier": 3,
             "title": "3-Day Deep Study",
-            "desc": "Choose one subject, book, or skill to study deeply for 3 consecutive days — at least 30 minutes per day. No skimming. Use the Feynman Technique at the end of each session. Mark complete on day 3.",
+            "desc": "Choose one subject, book, or skill to study deeply for 3 consecutive days — at least 30 minutes per day. Decide what it is right now and write it down. Do your first 30-minute session today using slow, questioning reading — after each section, close the material and write what you remember. Mark complete for beginning. Return tomorrow and the day after. Use the Feynman Technique at the end of each session: explain what you learnt as if to a 12-year-old.",
             "model": "Distributed Practice (Cepeda et al., multiple universities)",
             "why": "Research confirms returning to material across multiple days produces dramatically better long-term retention than single-session cramming — even when total study hours are identical.",
             "xp": 6
@@ -415,7 +415,7 @@
             "stat": "agility",
             "tier": 3,
             "title": "3-Day Comfort Zone Expansion",
-            "desc": "For 3 consecutive days, do one thing each day meaningfully outside your comfort zone — socially, physically, or intellectually. Log each one honestly. Mark complete on day 3.",
+            "desc": "Identify one thing meaningfully outside your comfort zone — socially, physically, or intellectually — and do it today. It should make you slightly uncomfortable, not terrified. Log it honestly: what was it, what did you feel before, what happened. Mark complete for today's step. Commit to doing one more each day for the next two days — different each time, same standard of honesty.",
             "model": "Systematic Desensitisation (Joseph Wolpe)",
             "why": "Psychiatrist Wolpe found graduated, voluntary exposure to uncomfortable situations systematically reduces anxiety responses. The comfort zone expands only through repeated, chosen discomfort — never through avoidance.",
             "xp": 6
@@ -445,7 +445,7 @@
             "stat": "agility",
             "tier": 3,
             "title": "The Pivot Journal",
-            "desc": "For 3 days, log every moment you adapted, changed course, or responded flexibly rather than rigidly. On day 3, identify which pivot had the best outcome and write precisely why. Mark complete on day 3.",
+            "desc": "Today, pay deliberate attention to every moment you adapt, change course, or respond flexibly rather than rigidly. Log at least three instances before the day ends — however small. Mark complete for today's observation. Continue the log for two more days. On day 3, identify which pivot had the best outcome and write precisely why. Flexibility is a skill. Logging it makes it visible.",
             "model": "Reflection on Action (Donald Schön, MIT)",
             "why": "MIT professor Schön found that professionals who systematically reflect on their adaptive responses develop significantly greater flexibility and judgement than those who act and move on without reflection.",
             "xp": 6
@@ -565,7 +565,7 @@
             "stat": "endurance",
             "tier": 3,
             "title": "3-Day Deep Work Challenge",
-            "desc": "For 3 consecutive days, complete at least one 90-minute deep work session per day on the same important project. Log what you accomplished after each session. Mark complete on day 3.",
+            "desc": "Identify the important project you will give three days of deep work to. Schedule the first 90-minute session — phone in another room, one task, zero distractions — and complete it today. Write what you accomplished when you finish. Mark complete for today's session. Return tomorrow and the day after for the same 90-minute block on the same project. Three consecutive days builds the habit of entering flow on demand.",
             "model": "Flow State (Mihaly Csikszentmihalyi)",
             "why": "Csikszentmihalyi found that flow — optimal experience and performance — requires extended uninterrupted engagement at the edge of skill. Three days of deep work builds the habit of entering flow on demand.",
             "xp": 6
@@ -575,7 +575,7 @@
             "stat": "endurance",
             "tier": 3,
             "title": "Design Your Ideal Week",
-            "desc": "Write your ideal week in time blocks — deep work, shallow work, exercise, rest, connection. Optimise for what actually matters to you, not for busyness. Then live exactly this week for 7 days.",
+            "desc": "Tonight, before you sleep, write your ideal week in time blocks — deep work, shallow work, exercise, rest, connection. Optimise for what actually matters to you, not for busyness. Be specific: name the activities and the hours. Mark complete for designing it. Then live it. The design is the commitment — the week ahead is the practice.",
             "model": "Ideal Week Planning (Michael Hyatt / Peter Drucker)",
             "why": "Research on intentional time design consistently shows that people who plan their weeks around values rather than tasks report higher productivity, lower stress, and significantly greater life satisfaction.",
             "xp": 6
@@ -585,7 +585,7 @@
             "stat": "endurance",
             "tier": 3,
             "title": "The Accountability Commitment",
-            "desc": "Find one person you respect and make a specific, concrete commitment about something you will complete in the next 7 days. Check in with them on day 7 — whether you completed it or not.",
+            "desc": "Identify one concrete thing you will complete in the next 7 days. Find one person you respect and tell them specifically what you are committing to and by when — today. Mark complete for making the commitment. Check in with them on day 7, whether you completed it or not. Social stakes are not pressure — they are the mechanism that closes the gap between intention and action.",
             "model": "Social Commitment (Gollwitzer & Brandstätter)",
             "why": "Research shows public commitment to a goal — especially to a specific individual whose opinion you value — increases follow-through by up to 65%. Social stakes add meaningful pressure without requiring punishment.",
             "xp": 5
@@ -595,7 +595,7 @@
             "stat": "endurance",
             "tier": 3,
             "title": "Monk Morning — 3 Days",
-            "desc": "For 3 consecutive days, protect the first hour of your morning entirely — no phone, no news, no social media. Use it only for your most important personal development activity. Mark complete on day 3.",
+            "desc": "Tonight, decide what your most important personal development activity is — reading, writing, planning, movement, learning. Write it down before you sleep so your morning self already knows. Tomorrow morning, protect the first hour entirely: no phone, no news, no social media. Use it only for that activity. Mark complete for deciding and beginning. Repeat for two more mornings. The first hour sets the tone for everything that follows.",
             "model": "Morning Routines of High Performers (Benjamin Hardy, PhD)",
             "why": "Organisational psychologist Hardy found that how you spend the first 60 minutes of your day sets the cognitive and emotional tone for everything that follows — and that protecting this time compounds measurably over months.",
             "xp": 6
@@ -715,7 +715,7 @@
             "stat": "charisma",
             "tier": 3,
             "title": "3-Day Deep Listening Practice",
-            "desc": "For 3 consecutive days, in every significant conversation practise full active listening — no phone, no planning your response, full presence, one genuine follow-up minimum. Log one insight from each day. Mark complete on day 3.",
+            "desc": "In your next significant conversation today, practise full active listening: no phone, no planning your response while they speak, full presence, one genuine follow-up question minimum. Afterwards, log one specific insight — something you noticed that you would have missed if you had been half-present. Mark complete for today. Return tomorrow and the day after with the same standard. Three days of deliberate practice begins rewiring the default mode of half-presence.",
             "model": "Generative Listening (Otto Scharmer, MIT)",
             "why": "MIT senior lecturer Scharmer identifies four levels of listening — downloading, factual, empathic, and generative. Most people rarely go beyond level two. Three days of deliberate practice begins rewiring the default mode of half-presence.",
             "xp": 6
