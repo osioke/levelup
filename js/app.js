@@ -141,14 +141,19 @@ function playTone(frequency, duration, type = 'sine', volume = 0.15) {
     } catch (e) { /* silent fail */ }
 }
 
+// ─── UI CLICK ────────────────────────────────────────────────
+// Short square-wave tick on any button/tap interaction.
+// Gives the System a sense of being alive and responsive.
+function playUIClick() {
+    playTone(880, 0.04, 'square', 0.08);
+}
+
 function playQuestComplete() {
-    // Retro square-wave acknowledgement — two short blips, crisp and systemy
     playTone(440, 0.07, 'square', 0.12);
     setTimeout(() => playTone(660, 0.1, 'square', 0.1), 90);
 }
 
 function playLevelUp() {
-    // Ascending sawtooth arpeggio — retro terminal confirm
     const notes = [330, 440, 550, 660];
     notes.forEach((n, i) => setTimeout(() => playTone(n, 0.18, 'sawtooth', 0.15), i * 90));
 }
@@ -159,9 +164,6 @@ function playRankUp() {
         const ctx = getAudioCtx();
         const now = ctx.currentTime;
 
-        // ── Low seismic boom ─────────────────────────────────────
-        // A deep sub-bass hit at 55Hz that decays slowly,
-        // giving the feel of something massive shifting.
         const sub     = ctx.createOscillator();
         const subGain = ctx.createGain();
         sub.connect(subGain);
@@ -174,8 +176,6 @@ function playRankUp() {
         sub.start(now);
         sub.stop(now + 2.2);
 
-        // ── Ascending sawtooth fanfare ────────────────────────────
-        // Five notes rising over ~700ms, harsh and triumphant.
         const fanfare = [220, 277, 330, 415, 494];
         fanfare.forEach((freq, i) => {
             const osc  = ctx.createOscillator();
@@ -191,9 +191,6 @@ function playRankUp() {
             osc.stop(t + 0.35);
         });
 
-        // ── Simulated reverb tail ─────────────────────────────────
-        // A high sine shimmer that fades in late and out slowly,
-        // creating the impression of the sound lingering in space.
         const shimmer     = ctx.createOscillator();
         const shimmerGain = ctx.createGain();
         shimmer.connect(shimmerGain);
@@ -214,9 +211,6 @@ function playCriticalHit() {
     try {
         const ctx = getAudioCtx();
         const now = ctx.currentTime;
-
-        // Sharp transient: a very short square burst at high frequency
-        // then a fast descending pitch sweep — reads as a "critical strike"
         const osc  = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain);
@@ -232,15 +226,12 @@ function playCriticalHit() {
 }
 
 // ─── AMBIENT DRONE ───────────────────────────────────────────
-// A quiet oscillator at 90Hz that fades in on the quest screen
-// and fades out when leaving. Adds System presence without intruding.
-// Stored on audioCtx so we can ramp gain without recreating nodes.
 let droneOsc  = null;
 let droneGain = null;
 
 function startAmbientDrone() {
     if (!soundEnabled) return;
-    if (droneOsc) return; // already running
+    if (droneOsc) return;
     try {
         const ctx = getAudioCtx();
         droneOsc  = ctx.createOscillator();
@@ -248,9 +239,9 @@ function startAmbientDrone() {
         droneOsc.connect(droneGain);
         droneGain.connect(ctx.destination);
         droneOsc.type            = 'sine';
-        droneOsc.frequency.value = 90; // audible on phone speakers, below 100Hz threshold
+        droneOsc.frequency.value = 90;
         droneGain.gain.setValueAtTime(0.0, ctx.currentTime);
-        droneGain.gain.linearRampToValueAtTime(0.04, ctx.currentTime + 2.0); // 2s fade in
+        droneGain.gain.linearRampToValueAtTime(0.04, ctx.currentTime + 2.0);
         droneOsc.start(ctx.currentTime);
     } catch (e) { /* silent fail */ }
 }
@@ -260,7 +251,7 @@ function stopAmbientDrone() {
     try {
         const ctx = getAudioCtx();
         droneGain.gain.setValueAtTime(droneGain.gain.value, ctx.currentTime);
-        droneGain.gain.linearRampToValueAtTime(0.0, ctx.currentTime + 1.0); // 1s fade out
+        droneGain.gain.linearRampToValueAtTime(0.0, ctx.currentTime + 1.0);
         const osc = droneOsc;
         droneOsc  = null;
         droneGain = null;
@@ -272,36 +263,14 @@ function toggleSound() {
     soundEnabled = !soundEnabled;
     document.getElementById('sound-icon').textContent = soundEnabled ? '🔊' : '🔇';
     localStorage.setItem('levelup_sound', soundEnabled ? '1' : '0');
-}
-
-function showSoundPrompt() {
-    const prompt = document.createElement('div');
-    prompt.style.cssText = `
-        position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
-        background:#1a1a2e; border:1px solid #4fc3f7; color:#c8d6e5;
-        font-family:'Share Tech Mono',monospace; font-size:0.7rem;
-        letter-spacing:1px; padding:12px 20px; z-index:9999;
-        text-align:center; max-width:320px; width:90%;
-        animation:fadeIn 0.4s ease; line-height:1.6; pointer-events:none;
-    `;
-    prompt.innerHTML = `🔊 SOUND IS ON<br>
-        <span style="color:#5a6a7a;font-size:0.65rem;">
-            Enables immersive audio feedback.<br>
-            Toggle anytime with the icon above.
-        </span>`;
-    document.body.appendChild(prompt);
-    setTimeout(() => {
-        prompt.style.transition = 'opacity 0.5s ease';
-        prompt.style.opacity    = '0';
-        setTimeout(() => prompt.remove(), 500);
-    }, 3000);
+    playUIClick();
 }
 
 // ─── STATE ───────────────────────────────────────────────────
 let player      = null;
 let dailyQuests = [];
 let allQuests   = [];
-let currentGear = 1; // 1, 2, or 3 — loaded from localStorage on init
+let currentGear = 1;
 
 // ─── INIT ─────────────────────────────────────────────────────
 async function init() {
@@ -309,21 +278,18 @@ async function init() {
     player    = loadPlayer();
 
     const savedSound = localStorage.getItem('levelup_sound');
-    if (savedSound === null) {
-        soundEnabled = true;
-        localStorage.setItem('levelup_sound', '1');
-        showSoundPrompt();
-    } else {
-        soundEnabled = savedSound === '1';
-    }
+    soundEnabled = savedSound === null ? true : savedSound === '1';
+    if (savedSound === null) localStorage.setItem('levelup_sound', '1');
+
     document.getElementById('sound-icon').textContent = soundEnabled ? '🔊' : '🔇';
     document.getElementById('sound-toggle').addEventListener('click', toggleSound);
 
-    // Load saved gear (defaults to 1 if never set)
     currentGear = loadGear();
 
-    // Settings gear button
-    document.getElementById('settings-btn').addEventListener('click', openSettings);
+    document.getElementById('settings-btn').addEventListener('click', () => {
+        playUIClick();
+        openSettings();
+    });
 
     setupTooltips();
 
@@ -364,7 +330,6 @@ function registerServiceWorker() {
 }
 
 // ─── TYPEWRITER UTILITY ───────────────────────────────────────
-// Used by runAwakenSequence and the Stage 1 lore sequence.
 function typeText(el, text, speed, onDone) {
     let i = 0;
     el.textContent = '';
@@ -376,99 +341,169 @@ function typeText(el, text, speed, onDone) {
             if (onDone) onDone();
         }
     }, speed);
+    return () => clearInterval(interval);
 }
 
-// ─── ONBOARDING (STAGE 1) ─────────────────────────────────────
-// Ambient drone starts immediately. Lore lines appear one at a time,
-// fading in 600ms apart. After the final line a short pause reveals
-// the name input. The > SIGNAL lines use --accent; lore text uses --text.
+// ─── ONBOARDING ──────────────────────────────────────────────
+// Three distinct phases. Each clears before the next begins.
+//
+//   Phase 1 — SIGNAL
+//   Three > lines type out one by one. After the last, a flash-clear
+//   simulates the terminal refreshing to a connected state.
+//
+//   Phase 2 — LORE
+//   Each sentence types out with a blinking cursor. Lines stack.
+//   After the last line a pause, then another flash-clear.
+//
+//   Phase 3 — NAME
+//   Two short prompt lines type out, then the input and button appear.
+//
+// The ambient drone runs throughout all phases.
 
 function runOnboarding() {
-    // Start drone immediately — the System is already present
     startAmbientDrone();
 
-    const loreContainer = document.getElementById('lore-lines');
-    const nameSection   = document.getElementById('name-section');
-    const nameInput     = document.getElementById('name-input');
-    const startBtn      = document.getElementById('start-btn');
+    const loreEl      = document.getElementById('lore-lines');
+    const nameSection = document.getElementById('name-section');
+    const nameInput   = document.getElementById('name-input');
+    const startBtn    = document.getElementById('start-btn');
 
-    const SIGNAL_COLOUR = 'var(--accent)';
-    const TEXT_COLOUR   = 'var(--text)';
+    // ── PHASE 1: SIGNAL ──────────────────────────────────────
+    function runSignalPhase() {
+        loreEl.innerHTML = '';
+        nameSection.classList.add('hidden');
+        startBtn.classList.add('hidden');
 
-    // Each entry: [text, colour]
-    const lines = [
-        ['> SIGNAL DETECTED',                    SIGNAL_COLOUR],
-        ['> LOCATING SURVIVOR...',               SIGNAL_COLOUR],
-        ['> CONNECTION ESTABLISHED',             SIGNAL_COLOUR],
-        ['',                                     TEXT_COLOUR  ],
-        ['The economy broke first.',             TEXT_COLOUR  ],
-        ['Then the systems. Then the people.',   TEXT_COLOUR  ],
-        ['Most are still waiting for someone to fix it.', TEXT_COLOUR],
-        ['You stopped waiting.',                 TEXT_COLOUR  ],
-        ['',                                     TEXT_COLOUR  ],
-        ['I am the System your future self deployed.', TEXT_COLOUR],
-        ['I found you because you are still moving.', TEXT_COLOUR],
-        ['That matters more than you know.',     TEXT_COLOUR  ],
-    ];
+        const signalLines = [
+            '> SIGNAL DETECTED',
+            '> LOCATING SURVIVOR...',
+            '> CONNECTION ESTABLISHED'
+        ];
+        let idx = 0;
 
-    let i = 0;
+        function typeNextSignalLine() {
+            if (idx >= signalLines.length) {
+                setTimeout(() => flashClear(runLorePhase), 800);
+                return;
+            }
+            const lineEl     = document.createElement('div');
+            lineEl.className = 'lore-line lore-signal';
+            const cursor     = document.createElement('span');
+            cursor.className = 'terminal-cursor';
+            loreEl.appendChild(lineEl);
+            lineEl.appendChild(cursor);
 
-    function showNextLine() {
-        if (i >= lines.length) {
-            // All lines shown — pause then reveal name input
-            setTimeout(() => {
-                nameSection.classList.remove('hidden');
-                nameInput.focus();
-            }, 700);
-            return;
+            typeText(lineEl, signalLines[idx], 55, () => {
+                cursor.remove();
+                idx++;
+                setTimeout(typeNextSignalLine, 300);
+            });
         }
 
-        const [text, colour] = lines[i];
-        i++;
-
-        if (text === '') {
-            // Empty line — just a spacer div, no fade needed
-            const spacer = document.createElement('div');
-            spacer.style.height = '0.6em';
-            loreContainer.appendChild(spacer);
-            setTimeout(showNextLine, 200);
-            return;
-        }
-
-        const el            = document.createElement('div');
-        el.className        = 'lore-line';
-        el.textContent      = text;
-        el.style.color      = colour;
-        el.style.opacity    = '0';
-        el.style.transition = 'opacity 0.5s ease';
-        loreContainer.appendChild(el);
-
-        // Double rAF ensures transition fires after element is in the DOM
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => { el.style.opacity = '1'; });
-        });
-
-        setTimeout(showNextLine, 600);
+        typeNextSignalLine();
     }
 
-    showNextLine();
+    // ── FLASH CLEAR ──────────────────────────────────────────
+    // Brief white flash then content wipes — terminal screen refresh.
+    function flashClear(onDone) {
+        loreEl.classList.add('terminal-flash');
+        setTimeout(() => {
+            loreEl.innerHTML = '';
+            loreEl.classList.remove('terminal-flash');
+            setTimeout(onDone, 150);
+        }, 220);
+    }
 
-    // ── Name input wiring ────────────────────────────────────
-    nameInput.addEventListener('input', () => {
-        if (nameInput.value.trim().length > 0) {
-            startBtn.classList.remove('hidden');
-        } else {
-            startBtn.classList.add('hidden');
+    // ── PHASE 2: LORE ────────────────────────────────────────
+    function runLorePhase() {
+        const loreLines = [
+            'The economy broke first.',
+            'Then the systems. Then the people.',
+            'Most are still waiting for someone to fix it.',
+            'You stopped waiting.',
+            'I am the System your future self deployed.',
+            'I found you because you are still moving.',
+            'That matters more than you know.'
+        ];
+        let idx = 0;
+
+        function typeNextLoreLine() {
+            if (idx >= loreLines.length) {
+                setTimeout(() => flashClear(runNamePhase), 1400);
+                return;
+            }
+
+            if (idx === 4) {
+                const gap        = document.createElement('div');
+                gap.style.height = '0.8em';
+                loreEl.appendChild(gap);
+            }
+
+            const lineEl     = document.createElement('div');
+            lineEl.className = 'lore-line';
+            const cursor     = document.createElement('span');
+            cursor.className = 'terminal-cursor';
+            loreEl.appendChild(lineEl);
+            lineEl.appendChild(cursor);
+
+            typeText(lineEl, loreLines[idx], 38, () => {
+                cursor.remove();
+                idx++;
+                const delay = (idx === 4) ? 500 : 200;
+                setTimeout(typeNextLoreLine, delay);
+            });
         }
+
+        typeNextLoreLine();
+    }
+
+    // ── PHASE 3: NAME ────────────────────────────────────────
+    function runNamePhase() {
+        const promptLines = [
+            'Identify yourself.',
+            'This name is your key.'
+        ];
+        let idx = 0;
+
+        function typeNextPromptLine() {
+            if (idx >= promptLines.length) {
+                setTimeout(() => {
+                    nameSection.classList.remove('hidden');
+                    nameInput.focus();
+                }, 500);
+                return;
+            }
+
+            const lineEl     = document.createElement('div');
+            lineEl.className = 'lore-line lore-prompt';
+            const cursor     = document.createElement('span');
+            cursor.className = 'terminal-cursor';
+            loreEl.appendChild(lineEl);
+            lineEl.appendChild(cursor);
+
+            typeText(lineEl, promptLines[idx], 55, () => {
+                cursor.remove();
+                idx++;
+                setTimeout(typeNextPromptLine, 350);
+            });
+        }
+
+        typeNextPromptLine();
+    }
+
+    // ── NAME INPUT WIRING ────────────────────────────────────
+    nameInput.addEventListener('input', () => {
+        startBtn.classList.toggle('hidden', nameInput.value.trim().length === 0);
     });
 
     nameInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && nameInput.value.trim().length > 0) {
-            submitName();
-        }
+        if (e.key === 'Enter' && nameInput.value.trim().length > 0) submitName();
     });
 
-    startBtn.onclick = submitName;
+    startBtn.addEventListener('click', () => {
+        playUIClick();
+        submitName();
+    });
 
     function submitName() {
         const name = nameInput.value.trim();
@@ -476,6 +511,8 @@ function runOnboarding() {
         stopAmbientDrone();
         runAwakenSequence(name.toUpperCase());
     }
+
+    runSignalPhase();
 }
 
 // ─── AWAKEN BOOT SEQUENCE ─────────────────────────────────────
@@ -532,9 +569,6 @@ function runAwakenSequence(name) {
 }
 
 // ─── HP HELPERS ──────────────────────────────────────────────
-// maxHp scales with level: 100 + (level × 5).
-// Entropy damage stays fixed so it becomes proportionally less
-// punishing as the player grows — a natural reward for longevity.
 function calcMaxHp(level) {
     return 100 + (level * 5);
 }
@@ -542,17 +576,7 @@ function calcMaxHp(level) {
 // ─── PLAYER MANAGEMENT ───────────────────────────────────────
 function loadPlayer() {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const p = JSON.parse(raw);
-
-    // ── Migration: add HP fields to saves that predate Stage 1 ──
-    if (p.hp === undefined || p.maxHp === undefined) {
-        const level  = levelFromXP(Math.max(0, earnedXP(p.stats)));
-        p.maxHp      = calcMaxHp(level);
-        p.hp         = p.maxHp; // grant full HP on migration — no retroactive punishment
-        p.corrupted  = false;
-    }
-    return p;
+    return raw ? JSON.parse(raw) : null;
 }
 
 function savePlayer() {
@@ -563,7 +587,7 @@ function createPlayer(name) {
     const stats = {};
     STAT_NAMES.forEach(stat => { stats[stat] = STAT_FLOOR; });
 
-    const maxHp = calcMaxHp(1); // Level 1 starting maxHp
+    const maxHp = calcMaxHp(1);
 
     player = {
         name,
@@ -601,16 +625,10 @@ function checkDailyReset() {
         player.momentum        = decayMomentum(player.momentum || 1.0, diffDays - 1);
     }
 
-    // ── Entropy: HP damage for missed days, regen for full completion ──
-    // maxHp is recalculated here in case the player has levelled up since last session.
-    const level = levelFromXP(Math.max(0, earnedXP(player.stats)));
+    const level  = levelFromXP(Math.max(0, earnedXP(player.stats)));
     player.maxHp = calcMaxHp(level);
 
     if (diffDays === 1) {
-        // Came back the next day — check if they completed all 5 quests yesterday.
-        // completedToday still holds yesterday's IDs at this point (not yet cleared).
-        // We count distinct stats covered rather than raw IDs, since Gear 2/3 can
-        // complete multiple quests per stat. Five unique stats covered = full day.
         const coveredStats = new Set(
             (player.completedToday || [])
                 .map(id => {
@@ -620,11 +638,9 @@ function checkDailyReset() {
                 .filter(Boolean)
         );
         if (coveredStats.size >= 5) {
-            // Full completion yesterday — regen 20 HP, capped at maxHp
             player.hp = Math.min(player.maxHp, (player.hp || player.maxHp) + 20);
         }
     } else {
-        // Missed days — apply entropy damage
         const missedDays = diffDays - 1;
         const hpDamage   = missedDays === 1 ? 10
                          : missedDays === 2 ? 20
@@ -632,8 +648,6 @@ function checkDailyReset() {
         player.hp = Math.max(0, (player.hp || player.maxHp) - hpDamage);
     }
 
-    // ── Corrupted state ───────────────────────────────────────
-    // Corrupted activates at 0 HP and clears only when HP rises above 25.
     if (player.hp <= 0) {
         player.hp        = 0;
         player.corrupted = true;
@@ -670,14 +684,14 @@ async function loadQuests() {
 function completeQuest(id, stat, baseXP) {
     if (player.completedToday.includes(id)) return;
 
-    const momentum   = player.momentum || 1.0;
-    let   earnedAmt  = parseFloat((baseXP * momentum).toFixed(1));
+    const momentum     = player.momentum || 1.0;
+    let   earnedAmt    = parseFloat((baseXP * momentum).toFixed(1));
 
-    // ── Corrupted debuff: XP halved while system integrity is below 25 HP ──
+    // Corrupted debuff: XP halved while HP is at 0
     const wasCorrupted = player.corrupted;
     if (wasCorrupted) earnedAmt = parseFloat((earnedAmt / 2).toFixed(1));
 
-    // ── Critical hit: 1-in-8 chance of a bonus strike ─────────
+    // Critical hit: 1-in-8 chance of a ×1.5 bonus strike
     const isCritical = Math.random() < 0.125;
     if (isCritical) {
         earnedAmt = parseFloat((earnedAmt * 1.5).toFixed(1));
@@ -698,7 +712,6 @@ function completeQuest(id, stat, baseXP) {
         setTimeout(() => card.classList.remove('completing'), 400);
     }
 
-    // ── Floating XP label — critical hit gets a gold [ CRITICAL ] label ──
     showFloatingXP(id, earnedAmt, isCritical);
     if (!isCritical) playQuestComplete();
 
@@ -707,11 +720,6 @@ function completeQuest(id, stat, baseXP) {
     const prevRank  = rankFromLevel(prevLevel);
     const newRank   = rankFromLevel(newLevel);
 
-    // ── SYSTEM RESTORED toast if corrupted just cleared ───────
-    // Corrupted clears when HP rises above 25. HP rises on daily reset
-    // after full completion, not on individual quest completion — so the
-    // toast here covers the edge case where a migrated player had HP
-    // set above 25 while corrupted was still true.
     if (wasCorrupted && !player.corrupted) {
         setTimeout(() => showToast('[ SYSTEM RESTORED ]', 'accent'), 400);
     }
@@ -746,16 +754,13 @@ function updateStatusScreen(animate) {
     const xpNext   = xpForLevel(level + 1) - xpForLevel(level);
     const pct      = xpNext > 0 ? Math.min(100, Math.round((xpThis / xpNext) * 100)) : 100;
 
-    // ── Corrupted state: red border pulse + override title text ──
     const header = document.getElementById('status-header');
     if (header) header.classList.toggle('corrupted', !!player.corrupted);
 
     const titleEl = document.getElementById('player-title');
-    if (player.corrupted) {
-        titleEl.textContent = '[ SYSTEM COMPROMISED ]';
-    } else {
-        titleEl.textContent = '[ ' + titleFromLevel(level) + ' ]';
-    }
+    titleEl.textContent = player.corrupted
+        ? '[ SYSTEM COMPROMISED ]'
+        : '[ ' + titleFromLevel(level) + ' ]';
 
     document.getElementById('player-name').textContent  = player.name;
     document.getElementById('player-level').textContent = level;
@@ -773,12 +778,11 @@ function updateStatusScreen(animate) {
     document.getElementById('momentum-bar').style.width   = mPct + '%';
     document.getElementById('momentum-value').textContent = momentum.toFixed(2) + 'x';
 
-    // ── HP bar ────────────────────────────────────────────────
     const hp    = player.hp    ?? player.maxHp;
     const maxHp = player.maxHp ?? calcMaxHp(level);
     const hpPct = Math.round((hp / maxHp) * 100);
-    document.getElementById('hp-bar').style.width    = hpPct + '%';
-    document.getElementById('hp-value').textContent  = hp + ' / ' + maxHp;
+    document.getElementById('hp-bar').style.width   = hpPct + '%';
+    document.getElementById('hp-value').textContent = hp + ' / ' + maxHp;
 
     STAT_NAMES.forEach(stat => {
         const val     = player.stats[stat] || STAT_FLOOR;
@@ -852,8 +856,8 @@ function animateNumber(elId, from, to, duration) {
 function showFloatingXP(questId, amount, isCritical) {
     const card = document.getElementById('quest-card-' + questId);
     if (!card) return;
-    const rect = card.getBoundingClientRect();
-    const baseTop = rect.top + window.scrollY;
+    const rect     = card.getBoundingClientRect();
+    const baseTop  = rect.top + window.scrollY;
     const baseLeft = rect.left + rect.width / 2 - 20;
 
     if (isCritical) {
@@ -876,8 +880,6 @@ function showFloatingXP(questId, amount, isCritical) {
 }
 
 // ─── LEVEL UP OVERLAY ────────────────────────────────────────
-// Overlays are now interactive — they do NOT auto-dismiss.
-// User must tap Share or Dismiss.
 function showLevelUpOverlay(level) {
     playLevelUp();
     spawnParticles('lu-particles', 20, 'var(--accent)');
@@ -893,18 +895,14 @@ function showLevelUpOverlay(level) {
     const overlay = document.getElementById('overlay-levelup');
     overlay.classList.remove('hidden');
 
-    // Share button — generates canvas card and triggers native share / download
-    document.getElementById('lu-share-btn').onclick = () => shareCard({
-        headline:    'LEVEL UP',
-        bigText:     String(level),
-        titleText,
-        subText,
-        accentColor: '#4fc3f7'
-    });
-
-    // Dismiss button
-    document.getElementById('lu-dismiss-btn').onclick = () =>
+    document.getElementById('lu-share-btn').onclick = () => {
+        playUIClick();
+        shareCard({ headline: 'LEVEL UP', bigText: String(level), titleText, subText, accentColor: '#4fc3f7' });
+    };
+    document.getElementById('lu-dismiss-btn').onclick = () => {
+        playUIClick();
         overlay.classList.add('hidden');
+    };
 }
 
 // ─── RANK UP OVERLAY ─────────────────────────────────────────
@@ -922,25 +920,17 @@ function showRankUpOverlay(rank, level) {
     const overlay = document.getElementById('overlay-rankup');
     overlay.classList.remove('hidden');
 
-    // Share button
-    document.getElementById('ru-share-btn').onclick = () => shareCard({
-        headline:    'RANK UP',
-        bigText:     rank,
-        titleText,
-        subText,
-        accentColor: '#ffd700'
-    });
-
-    // Dismiss button
-    document.getElementById('ru-dismiss-btn').onclick = () =>
+    document.getElementById('ru-share-btn').onclick = () => {
+        playUIClick();
+        shareCard({ headline: 'RANK UP', bigText: rank, titleText, subText, accentColor: '#ffd700' });
+    };
+    document.getElementById('ru-dismiss-btn').onclick = () => {
+        playUIClick();
         overlay.classList.add('hidden');
+    };
 }
 
 // ─── SHARE CARD GENERATOR ────────────────────────────────────
-// Draws a 1080×1080 branded share image on a canvas.
-// On mobile: triggers native share sheet with the image file.
-// On desktop: downloads the image directly.
-
 function shareCard({ headline, bigText, titleText, subText, accentColor }) {
     const W = 1080, H = 1080;
     const canvas = document.createElement('canvas');
@@ -948,11 +938,9 @@ function shareCard({ headline, bigText, titleText, subText, accentColor }) {
     canvas.height = H;
     const ctx = canvas.getContext('2d');
 
-    // ── Background ──────────────────────────────────
     ctx.fillStyle = '#0f0f1a';
     ctx.fillRect(0, 0, W, H);
 
-    // Subtle dot-grid overlay
     ctx.fillStyle = 'rgba(42, 42, 74, 0.7)';
     for (let x = 30; x < W; x += 60) {
         for (let y = 30; y < H; y += 60) {
@@ -962,47 +950,38 @@ function shareCard({ headline, bigText, titleText, subText, accentColor }) {
         }
     }
 
-    // ── Accent border lines ──────────────────────────
     ctx.fillStyle = accentColor;
-    ctx.fillRect(0, 0, W, 5);       // top
-    ctx.fillRect(0, H - 5, W, 5);   // bottom
-    ctx.fillRect(0, 0, 5, H);       // left
-    ctx.fillRect(W - 5, 0, 5, H);   // right
+    ctx.fillRect(0, 0, W, 5);
+    ctx.fillRect(0, H - 5, W, 5);
+    ctx.fillRect(0, 0, 5, H);
+    ctx.fillRect(W - 5, 0, 5, H);
 
-    // ── [ SYSTEM ] label ────────────────────────────
-    ctx.fillStyle   = accentColor;
-    ctx.textAlign   = 'center';
-    ctx.font        = '500 30px monospace';
+    ctx.fillStyle = accentColor;
+    ctx.textAlign = 'center';
+    ctx.font      = '500 30px monospace';
     ctx.fillText('[ SYSTEM ]', W / 2, 120);
 
-    // ── Headline ─────────────────────────────────────
     ctx.fillStyle = 'rgba(200, 214, 229, 0.45)';
     ctx.font      = '32px monospace';
     ctx.fillText(headline, W / 2, 178);
 
-    // ── Big number / rank — glowing ──────────────────
     ctx.save();
     ctx.shadowColor = accentColor;
     ctx.shadowBlur  = 80;
     ctx.fillStyle   = accentColor;
-
-    // Scale font down for long rank strings like SS+, SSS
     const bigFontSize = bigText.length > 2 ? 200 : 300;
     ctx.font = `bold ${bigFontSize}px monospace`;
     ctx.fillText(bigText, W / 2, 540);
     ctx.restore();
 
-    // ── Title ────────────────────────────────────────
     ctx.fillStyle = '#ffffff';
     ctx.font      = 'bold 54px sans-serif';
     ctx.fillText(titleText, W / 2, 650);
 
-    // ── Sub (rank · level) ───────────────────────────
     ctx.fillStyle = 'rgba(200, 214, 229, 0.5)';
     ctx.font      = '30px monospace';
     ctx.fillText(subText, W / 2, 712);
 
-    // ── Divider line ────────────────────────────────
     ctx.strokeStyle = 'rgba(42, 42, 74, 1)';
     ctx.lineWidth   = 1;
     ctx.beginPath();
@@ -1010,27 +989,22 @@ function shareCard({ headline, bigText, titleText, subText, accentColor }) {
     ctx.lineTo(W - 120, 760);
     ctx.stroke();
 
-    // ── Player name ──────────────────────────────────
     ctx.fillStyle = '#ffffff';
     ctx.font      = 'bold 44px monospace';
     ctx.fillText(player.name, W / 2, 836);
 
-    // ── Tagline ──────────────────────────────────────
     ctx.fillStyle = 'rgba(200, 214, 229, 0.35)';
     ctx.font      = '26px monospace';
     canvasWrapText(ctx, getRandomTagline(), W / 2, 908, W - 160, 38);
 
-    // ── Watermark ────────────────────────────────────
-    ctx.fillStyle = accentColor;
-    ctx.font      = '22px monospace';
+    ctx.fillStyle   = accentColor;
+    ctx.font        = '22px monospace';
     ctx.globalAlpha = 0.6;
     ctx.fillText('LEVELUP', W / 2, 1032);
     ctx.globalAlpha = 1;
 
-    // ── Share / download ─────────────────────────────
     canvas.toBlob(blob => {
         const file = new File([blob], 'levelup-moment.png', { type: 'image/png' });
-
         if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
             navigator.share({
                 files: [file],
@@ -1090,9 +1064,6 @@ function spawnParticles(containerId, count, color) {
 }
 
 // ─── GEAR ────────────────────────────────────────────────────
-// Gear is stored independently of the player object so it persists
-// across profile resets and is not affected by daily resets.
-
 function loadGear() {
     const saved = parseInt(localStorage.getItem(GEAR_KEY), 10);
     return (saved === 2 || saved === 3) ? saved : 1;
@@ -1101,9 +1072,7 @@ function loadGear() {
 function saveGear(gear) {
     currentGear = gear;
     localStorage.setItem(GEAR_KEY, String(gear));
-    // Immediately regenerate today's quest list with the new gear
     dailyQuests = getDailyQuests(allQuests, calculateLevel(), currentGear);
-    // If the quest screen is currently visible, re-render it live
     if (document.getElementById('screen-quests').classList.contains('active')) {
         renderQuests(dailyQuests, player.completedToday, player.momentum || 1.0);
     }
@@ -1111,23 +1080,22 @@ function saveGear(gear) {
 
 // ─── SETTINGS ────────────────────────────────────────────────
 function openSettings() {
-    // Pre-fill current name
     document.getElementById('settings-name-input').value = player.name;
-    // Always hide confirm box when opening
     document.getElementById('confirm-box').classList.add('hidden');
-    // Wire buttons fresh each time (avoids duplicate listeners)
-    document.getElementById('save-name-btn').onclick = savePlayerName;
-    document.getElementById('reset-btn').onclick     = showConfirmReset;
-    document.getElementById('confirm-yes').onclick   = resetProfile;
-    document.getElementById('confirm-no').onclick    = () =>
-        document.getElementById('confirm-box').classList.add('hidden');
 
-    // Sync gear selector to current gear
+    document.getElementById('save-name-btn').onclick = () => { playUIClick(); savePlayerName(); };
+    document.getElementById('reset-btn').onclick     = () => { playUIClick(); showConfirmReset(); };
+    document.getElementById('confirm-yes').onclick   = () => { playUIClick(); resetProfile(); };
+    document.getElementById('confirm-no').onclick    = () => {
+        playUIClick();
+        document.getElementById('confirm-box').classList.add('hidden');
+    };
+
     updateGearUI(currentGear);
 
-    // Wire gear option buttons
     document.querySelectorAll('.gear-option-btn').forEach(btn => {
         btn.onclick = () => {
+            playUIClick();
             const gear = parseInt(btn.dataset.gear, 10);
             saveGear(gear);
             updateGearUI(gear);
@@ -1143,7 +1111,6 @@ function updateGearUI(gear) {
         const isActive = parseInt(btn.dataset.gear, 10) === gear;
         btn.classList.toggle('gear-active', isActive);
     });
-    // Show the warning for the selected gear
     document.querySelectorAll('.gear-warning').forEach(el => el.classList.add('hidden'));
     const activeWarning = document.getElementById('gear-warning-' + gear);
     if (activeWarning) activeWarning.classList.remove('hidden');
@@ -1157,7 +1124,6 @@ function savePlayerName() {
     savePlayer();
     updateStatusScreen();
     showToast('✓ NAME UPDATED');
-    // Return to status after a beat so they see the change
     setTimeout(() => showScreen('screen-status'), 1200);
 }
 
@@ -1166,7 +1132,6 @@ function showConfirmReset() {
 }
 
 function resetProfile() {
-    // Wipe all stored data and reload cleanly from onboarding
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem('levelup_sound');
     localStorage.removeItem(GEAR_KEY);
@@ -1177,9 +1142,9 @@ function showToast(message, colour) {
     const existing = document.getElementById('levelup-toast');
     if (existing) existing.remove();
 
-    const toast     = document.createElement('div');
-    toast.id        = 'levelup-toast';
-    toast.className = 'save-toast' + (colour === 'accent' ? ' save-toast--accent' : '');
+    const toast       = document.createElement('div');
+    toast.id          = 'levelup-toast';
+    toast.className   = 'save-toast' + (colour === 'accent' ? ' save-toast--accent' : '');
     toast.textContent = message;
     document.body.appendChild(toast);
 
@@ -1197,6 +1162,7 @@ function setupTooltips() {
         el.parentNode.replaceChild(fresh, el);
         fresh.addEventListener('click', e => {
             e.stopPropagation();
+            playUIClick();
             const tip = fresh.dataset.tip;
             if (!tip) return;
             const box    = document.getElementById('tip-' + tip);
@@ -1216,22 +1182,18 @@ function setupTooltips() {
 
 // ─── UI HELPERS ──────────────────────────────────────────────
 function showScreen(id) {
-    const prev = document.querySelector('.screen.active');
+    const prev      = document.querySelector('.screen.active');
     const wasQuests = prev && prev.id === 'screen-quests';
 
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
 
-    if (id === 'screen-status') {
-        setupTooltips();
-    }
+    if (id === 'screen-status') setupTooltips();
     if (id === 'screen-quests') {
         renderQuests(dailyQuests, player.completedToday, player.momentum || 1.0);
         startAmbientDrone();
     }
-    if (wasQuests && id !== 'screen-quests') {
-        stopAmbientDrone();
-    }
+    if (wasQuests && id !== 'screen-quests') stopAmbientDrone();
 }
 
 // ─── START ───────────────────────────────────────────────────
