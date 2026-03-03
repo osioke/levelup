@@ -142,20 +142,130 @@ function playTone(frequency, duration, type = 'sine', volume = 0.15) {
 }
 
 function playQuestComplete() {
-    playTone(523, 0.12);
-    setTimeout(() => playTone(659, 0.12), 100);
-    setTimeout(() => playTone(784, 0.2),  200);
+    // Retro square-wave acknowledgement — two short blips, crisp and systemy
+    playTone(440, 0.07, 'square', 0.12);
+    setTimeout(() => playTone(660, 0.1, 'square', 0.1), 90);
 }
 
 function playLevelUp() {
-    const notes = [523, 659, 784, 1047];
-    notes.forEach((n, i) => setTimeout(() => playTone(n, 0.25, 'sine', 0.2), i * 120));
+    // Ascending sawtooth arpeggio — retro terminal confirm
+    const notes = [330, 440, 550, 660];
+    notes.forEach((n, i) => setTimeout(() => playTone(n, 0.18, 'sawtooth', 0.15), i * 90));
 }
 
 function playRankUp() {
-    const notes = [523, 659, 784, 1047, 1319];
-    notes.forEach((n, i) => setTimeout(() => playTone(n, 0.3, 'triangle', 0.25), i * 100));
-    setTimeout(() => playTone(1568, 0.6, 'sine', 0.3), 550);
+    if (!soundEnabled) return;
+    try {
+        const ctx = getAudioCtx();
+        const now = ctx.currentTime;
+
+        // ── Low seismic boom ─────────────────────────────────────
+        // A deep sub-bass hit at 55Hz that decays slowly,
+        // giving the feel of something massive shifting.
+        const sub     = ctx.createOscillator();
+        const subGain = ctx.createGain();
+        sub.connect(subGain);
+        subGain.connect(ctx.destination);
+        sub.type            = 'sine';
+        sub.frequency.value = 55;
+        subGain.gain.setValueAtTime(0.0, now);
+        subGain.gain.linearRampToValueAtTime(0.35, now + 0.08);
+        subGain.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
+        sub.start(now);
+        sub.stop(now + 2.2);
+
+        // ── Ascending sawtooth fanfare ────────────────────────────
+        // Five notes rising over ~700ms, harsh and triumphant.
+        const fanfare = [220, 277, 330, 415, 494];
+        fanfare.forEach((freq, i) => {
+            const osc  = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type            = 'sawtooth';
+            osc.frequency.value = freq;
+            const t = now + i * 0.13;
+            gain.gain.setValueAtTime(0.18, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+            osc.start(t);
+            osc.stop(t + 0.35);
+        });
+
+        // ── Simulated reverb tail ─────────────────────────────────
+        // A high sine shimmer that fades in late and out slowly,
+        // creating the impression of the sound lingering in space.
+        const shimmer     = ctx.createOscillator();
+        const shimmerGain = ctx.createGain();
+        shimmer.connect(shimmerGain);
+        shimmerGain.connect(ctx.destination);
+        shimmer.type            = 'sine';
+        shimmer.frequency.value = 880;
+        shimmerGain.gain.setValueAtTime(0.0, now + 0.6);
+        shimmerGain.gain.linearRampToValueAtTime(0.08, now + 0.9);
+        shimmerGain.gain.exponentialRampToValueAtTime(0.001, now + 3.0);
+        shimmer.start(now + 0.6);
+        shimmer.stop(now + 3.0);
+
+    } catch (e) { /* silent fail */ }
+}
+
+function playCriticalHit() {
+    if (!soundEnabled) return;
+    try {
+        const ctx = getAudioCtx();
+        const now = ctx.currentTime;
+
+        // Sharp transient: a very short square burst at high frequency
+        // then a fast descending pitch sweep — reads as a "critical strike"
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(1200, now);
+        osc.frequency.exponentialRampToValueAtTime(300, now + 0.15);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        osc.start(now);
+        osc.stop(now + 0.18);
+    } catch (e) { /* silent fail */ }
+}
+
+// ─── AMBIENT DRONE ───────────────────────────────────────────
+// A quiet oscillator at 90Hz that fades in on the quest screen
+// and fades out when leaving. Adds System presence without intruding.
+// Stored on audioCtx so we can ramp gain without recreating nodes.
+let droneOsc  = null;
+let droneGain = null;
+
+function startAmbientDrone() {
+    if (!soundEnabled) return;
+    if (droneOsc) return; // already running
+    try {
+        const ctx = getAudioCtx();
+        droneOsc  = ctx.createOscillator();
+        droneGain = ctx.createGain();
+        droneOsc.connect(droneGain);
+        droneGain.connect(ctx.destination);
+        droneOsc.type            = 'sine';
+        droneOsc.frequency.value = 90; // audible on phone speakers, below 100Hz threshold
+        droneGain.gain.setValueAtTime(0.0, ctx.currentTime);
+        droneGain.gain.linearRampToValueAtTime(0.04, ctx.currentTime + 2.0); // 2s fade in
+        droneOsc.start(ctx.currentTime);
+    } catch (e) { /* silent fail */ }
+}
+
+function stopAmbientDrone() {
+    if (!droneOsc || !droneGain) return;
+    try {
+        const ctx = getAudioCtx();
+        droneGain.gain.setValueAtTime(droneGain.gain.value, ctx.currentTime);
+        droneGain.gain.linearRampToValueAtTime(0.0, ctx.currentTime + 1.0); // 1s fade out
+        const osc = droneOsc;
+        droneOsc  = null;
+        droneGain = null;
+        setTimeout(() => { try { osc.stop(); } catch (e) {} }, 1100);
+    } catch (e) { /* silent fail */ }
 }
 
 function toggleSound() {
@@ -268,20 +378,82 @@ function typeText(el, text, speed, onDone) {
     }, speed);
 }
 
-// ─── ONBOARDING (STAGE 1 STUB) ────────────────────────────────
-// It will: play an ambient drone, display lore lines one at a time,
-// then reveal the name input with ENTER DESIGNATION placeholder.
-// For now the stub wires the name input directly to createPlayer
-// so the app remains fully functional during pre-Stage-1 development.
+// ─── ONBOARDING (STAGE 1) ─────────────────────────────────────
+// Ambient drone starts immediately. Lore lines appear one at a time,
+// fading in 600ms apart. After the final line a short pause reveals
+// the name input. The > SIGNAL lines use --accent; lore text uses --text.
 
 function runOnboarding() {
-    const nameSection = document.getElementById('name-section');
-    const nameInput   = document.getElementById('name-input');
-    const startBtn    = document.getElementById('start-btn');
+    // Start drone immediately — the System is already present
+    startAmbientDrone();
 
-    nameSection.classList.remove('hidden');
-    nameInput.focus();
+    const loreContainer = document.getElementById('lore-lines');
+    const nameSection   = document.getElementById('name-section');
+    const nameInput     = document.getElementById('name-input');
+    const startBtn      = document.getElementById('start-btn');
 
+    const SIGNAL_COLOUR = 'var(--accent)';
+    const TEXT_COLOUR   = 'var(--text)';
+
+    // Each entry: [text, colour]
+    const lines = [
+        ['> SIGNAL DETECTED',                    SIGNAL_COLOUR],
+        ['> LOCATING SURVIVOR...',               SIGNAL_COLOUR],
+        ['> CONNECTION ESTABLISHED',             SIGNAL_COLOUR],
+        ['',                                     TEXT_COLOUR  ],
+        ['The economy broke first.',             TEXT_COLOUR  ],
+        ['Then the systems. Then the people.',   TEXT_COLOUR  ],
+        ['Most are still waiting for someone to fix it.', TEXT_COLOUR],
+        ['You stopped waiting.',                 TEXT_COLOUR  ],
+        ['',                                     TEXT_COLOUR  ],
+        ['I am the System your future self deployed.', TEXT_COLOUR],
+        ['I found you because you are still moving.', TEXT_COLOUR],
+        ['That matters more than you know.',     TEXT_COLOUR  ],
+    ];
+
+    let i = 0;
+
+    function showNextLine() {
+        if (i >= lines.length) {
+            // All lines shown — pause then reveal name input
+            setTimeout(() => {
+                nameSection.classList.remove('hidden');
+                nameInput.focus();
+            }, 700);
+            return;
+        }
+
+        const [text, colour] = lines[i];
+        i++;
+
+        if (text === '') {
+            // Empty line — just a spacer div, no fade needed
+            const spacer = document.createElement('div');
+            spacer.style.height = '0.6em';
+            loreContainer.appendChild(spacer);
+            setTimeout(showNextLine, 200);
+            return;
+        }
+
+        const el            = document.createElement('div');
+        el.className        = 'lore-line';
+        el.textContent      = text;
+        el.style.color      = colour;
+        el.style.opacity    = '0';
+        el.style.transition = 'opacity 0.5s ease';
+        loreContainer.appendChild(el);
+
+        // Double rAF ensures transition fires after element is in the DOM
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => { el.style.opacity = '1'; });
+        });
+
+        setTimeout(showNextLine, 600);
+    }
+
+    showNextLine();
+
+    // ── Name input wiring ────────────────────────────────────
     nameInput.addEventListener('input', () => {
         if (nameInput.value.trim().length > 0) {
             startBtn.classList.remove('hidden');
@@ -301,6 +473,7 @@ function runOnboarding() {
     function submitName() {
         const name = nameInput.value.trim();
         if (!name) { nameInput.focus(); return; }
+        stopAmbientDrone();
         runAwakenSequence(name.toUpperCase());
     }
 }
@@ -358,10 +531,28 @@ function runAwakenSequence(name) {
     nextLine();
 }
 
+// ─── HP HELPERS ──────────────────────────────────────────────
+// maxHp scales with level: 100 + (level × 5).
+// Entropy damage stays fixed so it becomes proportionally less
+// punishing as the player grows — a natural reward for longevity.
+function calcMaxHp(level) {
+    return 100 + (level * 5);
+}
+
 // ─── PLAYER MANAGEMENT ───────────────────────────────────────
 function loadPlayer() {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const p = JSON.parse(raw);
+
+    // ── Migration: add HP fields to saves that predate Stage 1 ──
+    if (p.hp === undefined || p.maxHp === undefined) {
+        const level  = levelFromXP(Math.max(0, earnedXP(p.stats)));
+        p.maxHp      = calcMaxHp(level);
+        p.hp         = p.maxHp; // grant full HP on migration — no retroactive punishment
+        p.corrupted  = false;
+    }
+    return p;
 }
 
 function savePlayer() {
@@ -372,6 +563,8 @@ function createPlayer(name) {
     const stats = {};
     STAT_NAMES.forEach(stat => { stats[stat] = STAT_FLOOR; });
 
+    const maxHp = calcMaxHp(1); // Level 1 starting maxHp
+
     player = {
         name,
         stats,
@@ -379,7 +572,10 @@ function createPlayer(name) {
         lastQuestDate:   today(),
         consecutiveDays: 1,
         momentum:        1.0,
-        lastActiveDate:  today()
+        lastActiveDate:  today(),
+        hp:              maxHp,
+        maxHp,
+        corrupted:       false
     };
 
     savePlayer();
@@ -403,6 +599,46 @@ function checkDailyReset() {
     } else {
         player.consecutiveDays = 1;
         player.momentum        = decayMomentum(player.momentum || 1.0, diffDays - 1);
+    }
+
+    // ── Entropy: HP damage for missed days, regen for full completion ──
+    // maxHp is recalculated here in case the player has levelled up since last session.
+    const level = levelFromXP(Math.max(0, earnedXP(player.stats)));
+    player.maxHp = calcMaxHp(level);
+
+    if (diffDays === 1) {
+        // Came back the next day — check if they completed all 5 quests yesterday.
+        // completedToday still holds yesterday's IDs at this point (not yet cleared).
+        // We count distinct stats covered rather than raw IDs, since Gear 2/3 can
+        // complete multiple quests per stat. Five unique stats covered = full day.
+        const coveredStats = new Set(
+            (player.completedToday || [])
+                .map(id => {
+                    const q = allQuests.find(q => q.id === id);
+                    return q ? q.stat : null;
+                })
+                .filter(Boolean)
+        );
+        if (coveredStats.size >= 5) {
+            // Full completion yesterday — regen 20 HP, capped at maxHp
+            player.hp = Math.min(player.maxHp, (player.hp || player.maxHp) + 20);
+        }
+    } else {
+        // Missed days — apply entropy damage
+        const missedDays = diffDays - 1;
+        const hpDamage   = missedDays === 1 ? 10
+                         : missedDays === 2 ? 20
+                         : 35;
+        player.hp = Math.max(0, (player.hp || player.maxHp) - hpDamage);
+    }
+
+    // ── Corrupted state ───────────────────────────────────────
+    // Corrupted activates at 0 HP and clears only when HP rises above 25.
+    if (player.hp <= 0) {
+        player.hp        = 0;
+        player.corrupted = true;
+    } else if (player.corrupted && player.hp > 25) {
+        player.corrupted = false;
     }
 
     player.completedToday = [];
@@ -434,9 +670,21 @@ async function loadQuests() {
 function completeQuest(id, stat, baseXP) {
     if (player.completedToday.includes(id)) return;
 
-    const momentum  = player.momentum || 1.0;
-    const earnedAmt = parseFloat((baseXP * momentum).toFixed(1));
-    const xpBefore  = earnedXP(player.stats);
+    const momentum   = player.momentum || 1.0;
+    let   earnedAmt  = parseFloat((baseXP * momentum).toFixed(1));
+
+    // ── Corrupted debuff: XP halved while system integrity is below 25 HP ──
+    const wasCorrupted = player.corrupted;
+    if (wasCorrupted) earnedAmt = parseFloat((earnedAmt / 2).toFixed(1));
+
+    // ── Critical hit: 1-in-8 chance of a bonus strike ─────────
+    const isCritical = Math.random() < 0.125;
+    if (isCritical) {
+        earnedAmt = parseFloat((earnedAmt * 1.5).toFixed(1));
+        playCriticalHit();
+    }
+
+    const xpBefore = earnedXP(player.stats);
 
     player.stats[stat] = parseFloat(
         ((player.stats[stat] || STAT_FLOOR) + earnedAmt).toFixed(1)
@@ -450,13 +698,23 @@ function completeQuest(id, stat, baseXP) {
         setTimeout(() => card.classList.remove('completing'), 400);
     }
 
-    showFloatingXP(id, earnedAmt);
-    playQuestComplete();
+    // ── Floating XP label — critical hit gets a gold [ CRITICAL ] label ──
+    showFloatingXP(id, earnedAmt, isCritical);
+    if (!isCritical) playQuestComplete();
 
     const prevLevel = levelFromXP(xpBefore);
     const newLevel  = calculateLevel();
     const prevRank  = rankFromLevel(prevLevel);
     const newRank   = rankFromLevel(newLevel);
+
+    // ── SYSTEM RESTORED toast if corrupted just cleared ───────
+    // Corrupted clears when HP rises above 25. HP rises on daily reset
+    // after full completion, not on individual quest completion — so the
+    // toast here covers the edge case where a migrated player had HP
+    // set above 25 while corrupted was still true.
+    if (wasCorrupted && !player.corrupted) {
+        setTimeout(() => showToast('[ SYSTEM RESTORED ]', 'accent'), 400);
+    }
 
     renderQuests(dailyQuests, player.completedToday, player.momentum);
     updateStatusScreen();
@@ -482,16 +740,25 @@ function calculateLuck() {
 function updateStatusScreen(animate) {
     const level    = calculateLevel();
     const rank     = rankFromLevel(level);
-    const title    = titleFromLevel(level);
+    const momentum = player.momentum || 1.0;
     const xp       = earnedXP(player.stats);
     const xpThis   = xp - xpForLevel(level);
     const xpNext   = xpForLevel(level + 1) - xpForLevel(level);
     const pct      = xpNext > 0 ? Math.min(100, Math.round((xpThis / xpNext) * 100)) : 100;
-    const momentum = player.momentum || 1.0;
+
+    // ── Corrupted state: red border pulse + override title text ──
+    const header = document.getElementById('status-header');
+    if (header) header.classList.toggle('corrupted', !!player.corrupted);
+
+    const titleEl = document.getElementById('player-title');
+    if (player.corrupted) {
+        titleEl.textContent = '[ SYSTEM COMPROMISED ]';
+    } else {
+        titleEl.textContent = '[ ' + titleFromLevel(level) + ' ]';
+    }
 
     document.getElementById('player-name').textContent  = player.name;
     document.getElementById('player-level').textContent = level;
-    document.getElementById('player-title').textContent = '[ ' + title + ' ]';
 
     const rankEl = document.getElementById('rank-badge');
     rankEl.textContent = rank;
@@ -505,6 +772,13 @@ function updateStatusScreen(animate) {
     const mPct = Math.round(((momentum - 1.0) / 0.5) * 100);
     document.getElementById('momentum-bar').style.width   = mPct + '%';
     document.getElementById('momentum-value').textContent = momentum.toFixed(2) + 'x';
+
+    // ── HP bar ────────────────────────────────────────────────
+    const hp    = player.hp    ?? player.maxHp;
+    const maxHp = player.maxHp ?? calcMaxHp(level);
+    const hpPct = Math.round((hp / maxHp) * 100);
+    document.getElementById('hp-bar').style.width    = hpPct + '%';
+    document.getElementById('hp-value').textContent  = hp + ' / ' + maxHp;
 
     STAT_NAMES.forEach(stat => {
         const val     = player.stats[stat] || STAT_FLOOR;
@@ -575,15 +849,28 @@ function animateNumber(elId, from, to, duration) {
 }
 
 // ─── FLOATING XP ─────────────────────────────────────────────
-function showFloatingXP(questId, amount) {
+function showFloatingXP(questId, amount, isCritical) {
     const card = document.getElementById('quest-card-' + questId);
     if (!card) return;
-    const rect        = card.getBoundingClientRect();
+    const rect = card.getBoundingClientRect();
+    const baseTop = rect.top + window.scrollY;
+    const baseLeft = rect.left + rect.width / 2 - 20;
+
+    if (isCritical) {
+        const crit       = document.createElement('div');
+        crit.className   = 'float-xp float-critical';
+        crit.textContent = '[ CRITICAL ]';
+        crit.style.left  = baseLeft + 'px';
+        crit.style.top   = (baseTop - 24) + 'px';
+        document.body.appendChild(crit);
+        setTimeout(() => crit.remove(), 1100);
+    }
+
     const label       = document.createElement('div');
     label.className   = 'float-xp';
     label.textContent = '+' + amount + ' XP';
-    label.style.left  = (rect.left + rect.width / 2 - 20) + 'px';
-    label.style.top   = (rect.top + window.scrollY) + 'px';
+    label.style.left  = baseLeft + 'px';
+    label.style.top   = baseTop + 'px';
     document.body.appendChild(label);
     setTimeout(() => label.remove(), 1000);
 }
@@ -886,13 +1173,13 @@ function resetProfile() {
     window.location.reload();
 }
 
-function showToast(message) {
+function showToast(message, colour) {
     const existing = document.getElementById('levelup-toast');
     if (existing) existing.remove();
 
     const toast     = document.createElement('div');
     toast.id        = 'levelup-toast';
-    toast.className = 'save-toast';
+    toast.className = 'save-toast' + (colour === 'accent' ? ' save-toast--accent' : '');
     toast.textContent = message;
     document.body.appendChild(toast);
 
@@ -929,13 +1216,21 @@ function setupTooltips() {
 
 // ─── UI HELPERS ──────────────────────────────────────────────
 function showScreen(id) {
+    const prev = document.querySelector('.screen.active');
+    const wasQuests = prev && prev.id === 'screen-quests';
+
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+
     if (id === 'screen-status') {
         setupTooltips();
     }
     if (id === 'screen-quests') {
         renderQuests(dailyQuests, player.completedToday, player.momentum || 1.0);
+        startAmbientDrone();
+    }
+    if (wasQuests && id !== 'screen-quests') {
+        stopAmbientDrone();
     }
 }
 

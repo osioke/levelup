@@ -106,6 +106,11 @@ body {
     }
 }
 
+@keyframes corruptedPulse {
+    0%, 100% { border-color: #3a0a0a; box-shadow: 0 0 0px rgba(255, 82, 82, 0); }
+    50%       { border-color: var(--red); box-shadow: 0 0 14px rgba(255, 82, 82, 0.25); }
+}
+
 /* ── TAPPABLE ───────────────────────────────────────────────── */
 .tappable { cursor: pointer; transition: opacity 0.15s; }
 .tappable:hover { opacity: 0.8; }
@@ -249,6 +254,64 @@ body {
     font-size: 0.7rem;
     color: var(--green);
     text-align: right;
+}
+
+/* ── HP / INTEGRITY BAR ─────────────────────────────────────── */
+.hp-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 72px;
+    align-items: center;
+    gap: 10px;
+    padding-top: 8px;
+    margin-top: 4px;
+}
+
+.hp-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+}
+
+.hp-bar-wrap {
+    background: var(--border);
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.hp-bar {
+    height: 100%;
+    /* Red-to-amber gradient — low HP reads as danger */
+    background: linear-gradient(90deg, #ff5252, #ff9100);
+    border-radius: 2px;
+    width: 100%;
+    transition: width 1s ease;
+}
+
+.hp-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--red);
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* ── CORRUPTED STATE ────────────────────────────────────────── */
+/* Applied to #status-header when player.corrupted is true.
+   One class toggle — no structural changes needed. */
+.status-header.corrupted {
+    border: 1px solid #3a0a0a;
+    animation: corruptedPulse 2s ease infinite;
+    padding: 12px;
+    margin-bottom: 4px;
+}
+
+/* The title text is overridden in JS to [ SYSTEM COMPROMISED ]
+   when corrupted; this ensures it renders in red */
+.status-header.corrupted #player-title {
+    color: var(--red);
+    letter-spacing: 2px;
 }
 
 /* ── TOOLTIP BOX ────────────────────────────────────────────── */
@@ -494,7 +557,33 @@ body {
     cursor: not-allowed;
 }
 
-/* ── ONBOARDING ─────────────────────────────────────────────── */
+/* ── ONBOARDING LORE LINES ──────────────────────────────────── */
+#lore-lines {
+    text-align: left;
+    margin: 16px 0 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.9;
+    letter-spacing: 0.5px;
+}
+
+.lore-line {
+    display: block;
+}
+
+/* ── FLOATING CRITICAL LABEL ────────────────────────────────── */
+.float-critical {
+    color: var(--gold) !important;
+    font-size: 0.7rem !important;
+    text-shadow: 0 0 8px var(--gold) !important;
+    letter-spacing: 2px;
+}
+
+/* ── ACCENT TOAST VARIANT (SYSTEM RESTORED) ─────────────────── */
+.save-toast--accent {
+    border-color: var(--accent);
+    color: var(--accent);
+}
 .onboarding-box {
     border: 1px solid var(--border);
     background: var(--panel);

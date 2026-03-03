@@ -24,7 +24,7 @@
             <span id="sound-icon">🔇</span>
         </div>
 
-        <div class="status-header">
+        <div class="status-header" id="status-header">
             <div class="player-title tappable" id="player-title" data-tip="title">
                 [ THE BEGINNER ]
             </div>
@@ -55,6 +55,24 @@
                     <div class="momentum-bar" id="momentum-bar"></div>
                 </div>
                 <span class="momentum-value" id="momentum-value">1.00x</span>
+            </div>
+
+            <div class="hp-row tappable" id="hp-row" data-tip="hp">
+                <span class="hp-label">INTEGRITY</span>
+                <div class="hp-bar-wrap">
+                    <div class="hp-bar" id="hp-bar"></div>
+                </div>
+                <span class="hp-value" id="hp-value">105 / 105</span>
+            </div>
+
+            <div class="tooltip-box" id="tip-hp">
+                <strong>System Integrity</strong>
+                Complete all five stats each day and Integrity recovers by 20.
+                Miss a day and the System sustains damage — 10 for one missed day,
+                20 for two, 35 for three or more. If Integrity reaches zero, the
+                System enters a Corrupted state and XP gain is halved until you
+                recover above 25. Integrity capacity grows with your level — the
+                stronger you become, the more punishment you can absorb.
             </div>
 
             <div class="tooltip-box" id="tip-title">
