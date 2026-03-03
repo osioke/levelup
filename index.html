@@ -429,7 +429,7 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════
-         AWAKEN BOOT OVERLAY
+         AWAKEN BOOT OVERLAY  (first-time onboarding only)
     ═══════════════════════════════════════════════ -->
     <div class="overlay hidden" id="overlay-awaken">
         <div class="overlay-content awaken-content">
@@ -438,6 +438,24 @@
             <div class="boot-status" id="boot-status"></div>
         </div>
     </div>
+
+    <!-- ═══════════════════════════════════════════════
+         RELAUNCH BOOT OVERLAY  (every subsequent open)
+         Skippable on tap. Sits above all screens.
+    ═══════════════════════════════════════════════ -->
+    <div class="relaunch-boot hidden" id="relaunch-boot">
+        <div class="relaunch-boot-inner">
+            <div class="relaunch-lines" id="relaunch-lines"></div>
+            <div class="relaunch-skip"  id="relaunch-skip">[ TAP TO SKIP ]</div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         SYSTEM LOG STRIP
+         Fixed bottom-left. Entries stack upward, fade after 3s.
+         Rendered entirely by showLog() — no static HTML needed.
+    ═══════════════════════════════════════════════ -->
+    <div class="system-log" id="system-log"></div>
 
     <script src="js/quests.js"></script>
     <script src="js/app.js"></script>

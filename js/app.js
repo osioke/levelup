@@ -115,16 +115,6 @@ function getRandomTagline() {
 }
 
 // ─── SHOP ITEMS ──────────────────────────────────────────────
-// Each item has:
-//   id         — unique key, also used as player.buffs key where applicable
-//   emoji      — single emoji, the real-world object without naming it explicitly
-//   name       — what the System calls it
-//   desc       — Bridge principle: third-person description of what it IS
-//   effect     — what the System registers when consumed
-//   consumeMsg — shown in toast after consumption, present tense, indirect prompt
-//   price      — gold cost
-//   buffKey    — player.buffs property this affects (null for instant items)
-
 const SHOP_ITEMS = [
     {
         id:         'focusDraught',
@@ -132,7 +122,7 @@ const SHOP_ITEMS = [
         name:       'FOCUS DRAUGHT',
         desc:       'The warm drink that sharpens the mind before deep work. Field operatives in every timeline have used a version of this.',
         effect:     'INT + END directives yield double XP for the rest of the day.',
-        consumeMsg: '[ FOCUS DRAUGHT ACTIVE ] — The System has registered the intake.',
+        consumeMsg: '[SYSTEM_REGISTERED: FOCUS_DRAUGHT_CONSUMED]',
         price:      18,
         buffKey:    'focusDraught'
     },
@@ -142,7 +132,7 @@ const SHOP_ITEMS = [
         name:       'VITALITY TONIC',
         desc:       'Something that restores the body. Water. A meal. Anything nourishing.',
         effect:     'Restores 20 HP immediately.',
-        consumeMsg: '[ +20 HP ] — Something has been restored. The System registers the change.',
+        consumeMsg: '[SYSTEM_REGISTERED: VITALITY_TONIC_CONSUMED]',
         price:      15,
         buffKey:    null
     },
@@ -152,7 +142,7 @@ const SHOP_ITEMS = [
         name:       'SPRINT SCROLL',
         desc:       'A focused burst. Twenty-five minutes. Nothing else.',
         effect:     'Gear increases by one step for the rest of the day.',
-        consumeMsg: '[ GEAR ELEVATED ] — A focused session has begun. The System is watching.',
+        consumeMsg: '[SYSTEM_REGISTERED: SPRINT_SCROLL_CONSUMED]',
         price:      35,
         buffKey:    'sprintScroll'
     },
@@ -161,8 +151,8 @@ const SHOP_ITEMS = [
         emoji:      '🌑',
         name:       'REST SIGIL',
         desc:       'Ten minutes away from all screens. The System will wait.',
-        effect:     'Momentum decay is blocked for 24 hours. Missing a day will not reduce momentum while the Sigil is active.',
-        consumeMsg: '[ REST SIGIL ACTIVE ] — Absence registered. Momentum protected for 24h.',
+        effect:     'Momentum decay is blocked for 24 hours.',
+        consumeMsg: '[SYSTEM_REGISTERED: REST_SIGIL_CONSUMED]',
         price:      30,
         buffKey:    'restSigil'
     },
@@ -172,37 +162,33 @@ const SHOP_ITEMS = [
         name:       'CLARITY SHARDS',
         desc:       'Three things. What you are grateful for, or what you intend. Written.',
         effect:     '+5 XP bonus applied to the next three directives completed.',
-        consumeMsg: '[ CLARITY SHARDS ACTIVE ] — Three things have been committed to. The System notes the clarity.',
+        consumeMsg: '[SYSTEM_REGISTERED: CLARITY_SHARDS_CONSUMED]',
         price:      18,
         buffKey:    'clarityShards'
     }
 ];
 
 // ─── BUFF HELPERS ────────────────────────────────────────────
-// Returns a default buffs object for new / migrated players.
 function defaultBuffs() {
     return {
-        focusDraught:  null,   // ISO expiry string or null
-        sprintScroll:  null,   // ISO expiry string or null
-        restSigil:     null,   // ISO expiry string or null (24h from consume)
-        clarityShards: 0       // count of remaining bonus directives
+        focusDraught:  null,
+        sprintScroll:  null,
+        restSigil:     null,
+        clarityShards: 0
     };
 }
 
-// Returns true if a timestamped buff is currently active.
 function buffActive(expiryISO) {
     if (!expiryISO) return false;
     return new Date() < new Date(expiryISO);
 }
 
-// End-of-day ISO — midnight tonight in local time.
 function endOfDayISO() {
     const d = new Date();
     d.setHours(23, 59, 59, 999);
     return d.toISOString();
 }
 
-// 24 hours from now as ISO string.
 function in24hISO() {
     return new Date(Date.now() + 86400000).toISOString();
 }
@@ -234,7 +220,6 @@ function playTone(frequency, duration, type = 'sine', volume = 0.15) {
     } catch (e) { /* silent fail */ }
 }
 
-// ─── UI CLICK ────────────────────────────────────────────────
 function playUIClick() {
     playTone(880, 0.04, 'square', 0.08);
 }
@@ -293,7 +278,6 @@ function playRankUp() {
         shimmerGain.gain.exponentialRampToValueAtTime(0.001, now + 3.0);
         shimmer.start(now + 0.6);
         shimmer.stop(now + 3.0);
-
     } catch (e) { /* silent fail */ }
 }
 
@@ -316,9 +300,6 @@ function playCriticalHit() {
     } catch (e) { /* silent fail */ }
 }
 
-// ─── CONSUME SOUND ───────────────────────────────────────────
-// Rising three-tone sequence — distinct from the two-note quest chime.
-// Suggests a buff being applied: low → mid → high, sine wave, smooth fade.
 function playConsume() {
     if (!soundEnabled) return;
     try {
@@ -343,12 +324,24 @@ function playConsume() {
 }
 
 // ─── AMBIENT DRONE ───────────────────────────────────────────
-let droneOsc  = null;
-let droneGain = null;
+// Runs on both Status and Quest screens.
+// In Corrupted state an LFO modulates the drone pitch ±4Hz at 0.3Hz
+// to signal structural instability — slow enough to feel, not fast enough
+// to irritate.
+
+let droneOsc      = null;
+let droneGain     = null;
+let droneLfoTimer = null;   // setInterval id for the LFO tick
+let droneLfoPhase = 0;      // current phase in radians, advances each tick
+
+const DRONE_BASE_FREQ = 90;   // Hz — base pitch
+const DRONE_LFO_DEPTH = 4;    // Hz — ±4Hz deviation in Corrupted state
+const DRONE_LFO_RATE  = 0.3;  // Hz — full cycle speed
+const DRONE_LFO_TICK  = 50;   // ms — how often we update the pitch (20 ticks/s)
 
 function startAmbientDrone() {
     if (!soundEnabled) return;
-    if (droneOsc) return;
+    if (droneOsc) return;   // already running
     try {
         const ctx = getAudioCtx();
         droneOsc  = ctx.createOscillator();
@@ -356,14 +349,38 @@ function startAmbientDrone() {
         droneOsc.connect(droneGain);
         droneGain.connect(ctx.destination);
         droneOsc.type            = 'sine';
-        droneOsc.frequency.value = 90;
+        droneOsc.frequency.value = DRONE_BASE_FREQ;
         droneGain.gain.setValueAtTime(0.0, ctx.currentTime);
         droneGain.gain.linearRampToValueAtTime(0.04, ctx.currentTime + 2.0);
         droneOsc.start(ctx.currentTime);
+
+        // Start LFO tick — runs whether corrupted or not,
+        // but only modulates pitch when player.corrupted is true.
+        droneLfoPhase = 0;
+        droneLfoTimer = setInterval(() => {
+            if (!droneOsc) return;
+            droneLfoPhase += (2 * Math.PI * DRONE_LFO_RATE * DRONE_LFO_TICK) / 1000;
+            const corrupted = player && player.corrupted;
+            const deviation = corrupted
+                ? DRONE_LFO_DEPTH * Math.sin(droneLfoPhase)
+                : 0;
+            droneOsc.frequency.setTargetAtTime(
+                DRONE_BASE_FREQ + deviation,
+                getAudioCtx().currentTime,
+                0.05   // short time constant — responds in ~50ms
+            );
+        }, DRONE_LFO_TICK);
+
     } catch (e) { /* silent fail */ }
 }
 
 function stopAmbientDrone() {
+    // Stop LFO tick first
+    if (droneLfoTimer !== null) {
+        clearInterval(droneLfoTimer);
+        droneLfoTimer = null;
+        droneLfoPhase = 0;
+    }
     if (!droneOsc || !droneGain) return;
     try {
         const ctx = getAudioCtx();
@@ -380,6 +397,16 @@ function toggleSound() {
     soundEnabled = !soundEnabled;
     document.getElementById('sound-icon').textContent = soundEnabled ? '🔊' : '🔇';
     localStorage.setItem('levelup_sound', soundEnabled ? '1' : '0');
+
+    // Re-evaluate drone for current screen
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen) {
+        const id = activeScreen.id;
+        if (id === 'screen-status' || id === 'screen-quests') {
+            if (soundEnabled) startAmbientDrone();
+            else stopAmbientDrone();
+        }
+    }
     playUIClick();
 }
 
@@ -391,8 +418,10 @@ let currentGear = 1;
 
 // ─── INIT ─────────────────────────────────────────────────────
 async function init() {
-    allQuests = await loadQuests();
-    player    = loadPlayer();
+    // Kick off quest fetch immediately — runs in parallel with boot sequence
+    const questsPromise = loadQuests();
+
+    player = loadPlayer();
 
     const savedSound = localStorage.getItem('levelup_sound');
     soundEnabled = savedSound === null ? true : savedSound === '1';
@@ -416,16 +445,119 @@ async function init() {
     setupTooltips();
 
     if (!player) {
+        // First-time player — go straight to onboarding, no relaunch boot
+        allQuests = await questsPromise;
         showScreen('screen-onboarding');
         runOnboarding();
         return;
     }
 
+    // Returning player — run relaunch boot in parallel with data load.
+    // The boot accepts a promise; when it resolves it transitions to status.
+    allQuests = await Promise.race([
+        questsPromise,
+        new Promise(resolve => setTimeout(() => resolve([]), 4000)) // 4s timeout fallback
+    ]);
+    // Ensure we have the real quests even if race returned early
+    if (!allQuests.length) allQuests = await questsPromise;
+
     checkDailyReset();
     dailyQuests = getDailyQuests(allQuests, calculateLevel(), effectiveGear());
     updateStatusScreen();
+
+    // Run relaunch boot over the already-prepared status screen
+    await runRelaunchBoot(questsPromise);
+
     showScreen('screen-status');
     registerServiceWorker();
+}
+
+// ─── RELAUNCH BOOT ───────────────────────────────────────────
+// Overlays the app with a rapid diagnostic scroll.
+// Resolves when the animation finishes OR the player taps.
+// dataPromise is passed so a tap can check if data is ready.
+//
+// Momentum delta: compares current momentum against the value it
+// would have been before today's reset — gives the player real
+// feedback in the boot sequence.
+
+function runRelaunchBoot(dataPromise) {
+    return new Promise(resolve => {
+        const overlay   = document.getElementById('relaunch-boot');
+        const linesEl   = document.getElementById('relaunch-lines');
+        const skipEl    = document.getElementById('relaunch-skip');
+
+        overlay.classList.remove('hidden');
+        linesEl.innerHTML = '';
+
+        // Calculate real momentum delta for display
+        const currentMomentum = player.momentum || 1.0;
+        const prevMomentum    = player._prevMomentum || currentMomentum;
+        const delta           = parseFloat((currentMomentum - prevMomentum).toFixed(4));
+        const deltaStr        = delta >= 0
+            ? '+' + delta.toFixed(4)
+            : delta.toFixed(4);
+
+        const bootLines = [
+            '> RECONNECTING TO FIELD OPERATOR...',
+            '> CHECKING TEMPORAL BUFFER... [OK]',
+            '> STAT INTEGRITY: VERIFIED',
+            '> MOMENTUM_DELTA: ' + deltaStr,
+            player.corrupted
+                ? '> WARNING: SYSTEM INTEGRITY COMPROMISED'
+                : '> SYSTEM INTEGRITY: NOMINAL',
+            '> STANDING BY.'
+        ];
+
+        let dismissed  = false;
+        let lineIndex  = 0;
+        let lineTimer  = null;
+
+        function dismiss() {
+            if (dismissed) return;
+            dismissed = true;
+            if (lineTimer) clearTimeout(lineTimer);
+            overlay.classList.add('relaunch-fade-out');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('relaunch-fade-out');
+                resolve();
+            }, 350);
+        }
+
+        // Tap anywhere to skip
+        overlay.addEventListener('click', dismiss, { once: true });
+
+        // Rapid line reveal — each line appears after a short delay
+        const LINE_DELAY = 160; // ms between lines — 6 lines ≈ 960ms total
+
+        function showNextLine() {
+            if (dismissed) return;
+            if (lineIndex >= bootLines.length) {
+                // All lines shown — brief pause then auto-dismiss
+                lineTimer = setTimeout(dismiss, 400);
+                return;
+            }
+            const line       = document.createElement('div');
+            line.className   = 'relaunch-line';
+            line.textContent = bootLines[lineIndex];
+            linesEl.appendChild(line);
+
+            // Highlight the momentum delta line
+            if (bootLines[lineIndex].includes('MOMENTUM_DELTA')) {
+                line.classList.add('relaunch-line--highlight');
+            }
+            // Warning line gets a warning colour
+            if (bootLines[lineIndex].includes('WARNING')) {
+                line.classList.add('relaunch-line--warning');
+            }
+
+            lineIndex++;
+            lineTimer = setTimeout(showNextLine, LINE_DELAY);
+        }
+
+        showNextLine();
+    });
 }
 
 // ─── SERVICE WORKER ──────────────────────────────────────────
@@ -616,7 +748,7 @@ function runOnboarding() {
     runSignalPhase();
 }
 
-// ─── AWAKEN BOOT SEQUENCE ─────────────────────────────────────
+// ─── AWAKEN BOOT SEQUENCE (first-time only) ──────────────────
 function runAwakenSequence(name) {
     const overlay = document.getElementById('overlay-awaken');
     overlay.classList.remove('hidden');
@@ -679,7 +811,6 @@ function loadPlayer() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const p = JSON.parse(raw);
-    // Migration: add gold and buffs to existing saves that predate Stage 2
     if (typeof p.gold !== 'number') p.gold = 0;
     if (!p.buffs) p.buffs = defaultBuffs();
     return p;
@@ -716,8 +847,6 @@ function createPlayer(name) {
 }
 
 // ─── EFFECTIVE GEAR ──────────────────────────────────────────
-// Sprint Scroll raises gear by 1 for the rest of the day.
-// This is the single source of truth used everywhere gear is needed.
 function effectiveGear() {
     const base = currentGear;
     if (player && player.buffs && buffActive(player.buffs.sprintScroll)) {
@@ -736,14 +865,14 @@ function checkDailyReset() {
         (new Date(todayStr) - new Date(lastDate)) / 86400000
     );
 
+    // Store previous momentum before mutation — used by relaunch boot delta display
+    player._prevMomentum = player.momentum || 1.0;
+
     if (diffDays === 1) {
         player.consecutiveDays = (player.consecutiveDays || 0) + 1;
         player.momentum        = buildMomentum(player.consecutiveDays);
     } else {
         player.consecutiveDays = 1;
-
-        // Rest Sigil blocks momentum decay for 24h from consumption.
-        // If the sigil is still active, skip the decay entirely.
         if (!buffActive(player.buffs && player.buffs.restSigil)) {
             player.momentum = decayMomentum(player.momentum || 1.0, diffDays - 1);
         }
@@ -779,10 +908,6 @@ function checkDailyReset() {
         player.corrupted = false;
     }
 
-    // Clear day-scoped buffs that expired at midnight.
-    // focusDraught and sprintScroll are end-of-day buffs — clear them.
-    // restSigil is timestamp-based (24h) — left to buffActive() to evaluate.
-    // clarityShards are count-based — persist until used up.
     if (!buffActive(player.buffs.focusDraught))  player.buffs.focusDraught = null;
     if (!buffActive(player.buffs.sprintScroll))   player.buffs.sprintScroll  = null;
 
@@ -811,6 +936,53 @@ async function loadQuests() {
     }
 }
 
+// ─── SYSTEM LOG ──────────────────────────────────────────────
+// Replaces the toast system entirely.
+//
+// Entries stack upward from the bottom-left. Each fades after 3s.
+// A maximum of 4 entries are visible at once; the oldest is removed
+// when a 5th fires. All previous showToast() calls are replaced with
+// showLog() throughout.
+//
+// Variant 'warn' renders in the warning colour (corrupted red).
+// Default renders in var(--accent).
+
+const LOG_MAX     = 4;
+const LOG_LINGER  = 3000; // ms before fade starts
+const LOG_FADE    = 500;  // ms fade duration
+
+function showLog(message, variant) {
+    const container = document.getElementById('system-log');
+    if (!container) return;
+
+    // Enforce max entries — remove oldest if at cap
+    const existing = container.querySelectorAll('.log-entry');
+    if (existing.length >= LOG_MAX) {
+        existing[0].remove();
+    }
+
+    const entry       = document.createElement('div');
+    entry.className   = 'log-entry'
+        + (variant === 'warn'   ? ' log-entry--warn'   : '')
+        + (variant === 'accent' ? ' log-entry--accent'  : '');
+    entry.textContent = message;
+
+    // Entries are appended — CSS flex-direction:column-reverse
+    // makes the newest appear at the bottom and pushes older ones up.
+    container.appendChild(entry);
+
+    // Trigger slide-in on next frame
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => entry.classList.add('log-entry--visible'));
+    });
+
+    // Schedule fade and removal
+    setTimeout(() => {
+        entry.classList.add('log-entry--fading');
+        setTimeout(() => entry.remove(), LOG_FADE);
+    }, LOG_LINGER);
+}
+
 // ─── SHOP ────────────────────────────────────────────────────
 function openShop() {
     renderShop();
@@ -827,9 +999,7 @@ function renderShop() {
     goldEl.textContent = gold;
     list.innerHTML     = '';
 
-    // ── Active buffs panel ───────────────────────────────────
     const activeLines = [];
-
     if (buffActive(buffs.focusDraught)) {
         activeLines.push('☕ FOCUS DRAUGHT — INT + END ×2 active until midnight');
     }
@@ -856,11 +1026,8 @@ function renderShop() {
         buffsEl.classList.add('hidden');
     }
 
-    // ── Item cards ───────────────────────────────────────────
     SHOP_ITEMS.forEach(item => {
         const canAfford = gold >= item.price;
-
-        // Determine if this item is already active (for timestamped buffs)
         let alreadyActive = false;
         if (item.buffKey && item.buffKey !== 'clarityShards') {
             alreadyActive = buffActive(buffs[item.buffKey]);
@@ -888,11 +1055,9 @@ function renderShop() {
                 ${!canAfford || alreadyActive ? 'disabled' : ''}
             >${alreadyActive ? '[ ACTIVE ]' : canAfford ? 'CONSUME' : 'INSUFFICIENT GOLD'}</button>
         `;
-
         list.appendChild(card);
     });
 
-    // Wire consume buttons
     document.querySelectorAll('.consume-btn:not([disabled])').forEach(btn => {
         btn.addEventListener('click', () => {
             playUIClick();
@@ -909,16 +1074,14 @@ function consumeItem(itemId) {
     const gold = player.gold || 0;
     if (gold < item.price) return;
 
-    // Guard: Sprint Scroll at Gear 3 — already at max
     if (itemId === 'sprintScroll' && effectiveGear() >= 3) {
-        showToast('GEAR CEILING REACHED — SPRINT SCROLL HAS NO EFFECT HERE');
+        showLog('[WARNING: GEAR_CEILING_REACHED]', 'warn');
         return;
     }
 
     player.gold = gold - item.price;
 
     switch (itemId) {
-
         case 'focusDraught':
             player.buffs.focusDraught = endOfDayISO();
             break;
@@ -926,39 +1089,39 @@ function consumeItem(itemId) {
         case 'vitalityTonic': {
             const maxHp = player.maxHp || calcMaxHp(calculateLevel());
             player.hp   = Math.min(maxHp, (player.hp || maxHp) + 20);
-            // Update HP display on status screen immediately
             const hpPct = Math.round((player.hp / maxHp) * 100);
             const hpEl  = document.getElementById('hp-bar');
             const hpVal = document.getElementById('hp-value');
             if (hpEl)  hpEl.style.width      = hpPct + '%';
             if (hpVal) hpVal.textContent      = player.hp + ' / ' + maxHp;
+            showLog('[VITALITY_TONIC: +20 HP]');
             break;
         }
 
         case 'sprintScroll':
             player.buffs.sprintScroll = endOfDayISO();
-            // Refresh daily quests immediately to reflect elevated gear
             dailyQuests = getDailyQuests(allQuests, calculateLevel(), effectiveGear());
+            showLog('[GEAR_SHIFT: GEAR_' + effectiveGear() + '_ENGAGED]');
             break;
 
         case 'restSigil':
             player.buffs.restSigil = in24hISO();
+            showLog('[REST_SIGIL: MOMENTUM_PROTECTED_24H]');
             break;
 
         case 'clarityShards':
-            // Stack on top of any remaining shards
             player.buffs.clarityShards = (player.buffs.clarityShards || 0) + 3;
             break;
     }
 
     savePlayer();
     playConsume();
-    showToast(item.consumeMsg, 'accent');
 
-    // Re-render shop to update gold, active buffs, and button states
+    // Main consume log entry (from SHOP_ITEMS definition)
+    showLog(item.consumeMsg, 'accent');
+
     renderShop();
 
-    // Update gold display on status screen
     const goldEl = document.getElementById('gold-value');
     if (goldEl) goldEl.textContent = player.gold;
 }
@@ -970,27 +1133,24 @@ function completeQuest(id, stat, baseXP) {
     const momentum     = player.momentum || 1.0;
     let   earnedAmt    = parseFloat((baseXP * momentum).toFixed(1));
 
-    // Corrupted debuff: XP halved while HP is at 0
     const wasCorrupted = player.corrupted;
     if (wasCorrupted) earnedAmt = parseFloat((earnedAmt / 2).toFixed(1));
 
-    // Focus Draught: double XP for INT and END directives
     if (buffActive(player.buffs.focusDraught) &&
         (stat === 'intelligence' || stat === 'endurance')) {
         earnedAmt = parseFloat((earnedAmt * 2).toFixed(1));
     }
 
-    // Clarity Shards: flat +5 XP on next 3 directives
     if (player.buffs.clarityShards > 0) {
         earnedAmt = parseFloat((earnedAmt + 5).toFixed(1));
         player.buffs.clarityShards -= 1;
     }
 
-    // Critical hit: 1-in-8 chance of a ×1.5 bonus strike
     const isCritical = Math.random() < 0.125;
     if (isCritical) {
         earnedAmt = parseFloat((earnedAmt * 1.5).toFixed(1));
         playCriticalHit();
+        showLog('[CRITICAL_STRIKE: ×1.5 APPLIED]', 'accent');
     }
 
     const xpBefore = earnedXP(player.stats);
@@ -999,8 +1159,6 @@ function completeQuest(id, stat, baseXP) {
         ((player.stats[stat] || STAT_FLOOR) + earnedAmt).toFixed(1)
     );
     player.completedToday.push(id);
-
-    // Gold earned equals the base XP value of the quest (before multipliers)
     player.gold = (player.gold || 0) + baseXP;
 
     savePlayer();
@@ -1014,22 +1172,31 @@ function completeQuest(id, stat, baseXP) {
     showFloatingXP(id, earnedAmt, isCritical);
     if (!isCritical) playQuestComplete();
 
+    // Log the stat gain
+    showLog('[LOG: ' + stat.toUpperCase() + ' +' + earnedAmt + ' XP]');
+
     const prevLevel = levelFromXP(xpBefore);
     const newLevel  = calculateLevel();
     const prevRank  = rankFromLevel(prevLevel);
     const newRank   = rankFromLevel(newLevel);
 
     if (wasCorrupted && !player.corrupted) {
-        setTimeout(() => showToast('[ SYSTEM RESTORED ]', 'accent'), 400);
+        setTimeout(() => showLog('[SYSTEM_RESTORED: CORRUPTION_CLEARED]', 'accent'), 400);
     }
 
     renderQuests(dailyQuests, player.completedToday, player.momentum);
     updateStatusScreen();
 
     if (newRank !== prevRank) {
-        setTimeout(() => showRankUpOverlay(newRank, newLevel), 600);
+        setTimeout(() => {
+            showLog('[RECLASSIFIED: ' + newRank + '-RANK CONFIRMED]', 'accent');
+            showRankUpOverlay(newRank, newLevel);
+        }, 600);
     } else if (newLevel > prevLevel) {
-        setTimeout(() => showLevelUpOverlay(newLevel), 600);
+        setTimeout(() => {
+            showLog('[THRESHOLD: LEVEL ' + newLevel + ' REACHED]', 'accent');
+            showLevelUpOverlay(newLevel);
+        }, 600);
     }
 }
 
@@ -1083,7 +1250,6 @@ function updateStatusScreen(animate) {
     document.getElementById('hp-bar').style.width   = hpPct + '%';
     document.getElementById('hp-value').textContent = hp + ' / ' + maxHp;
 
-    // Gold
     const goldEl = document.getElementById('gold-value');
     if (goldEl) goldEl.textContent = player.gold || 0;
 
@@ -1402,7 +1568,7 @@ function openSettings() {
             const gear = parseInt(btn.dataset.gear, 10);
             saveGear(gear);
             updateGearUI(gear);
-            showToast('GEAR ' + gear + ' ENGAGED');
+            showLog('[GEAR_SHIFT: GEAR_' + gear + '_ENGAGED]');
         };
     });
 
@@ -1426,7 +1592,7 @@ function savePlayerName() {
     player.name = newName;
     savePlayer();
     updateStatusScreen();
-    showToast('DESIGNATION UPDATED');
+    showLog('[DESIGNATION_UPDATED]');
     setTimeout(() => showScreen('screen-status'), 1200);
 }
 
@@ -1439,23 +1605,6 @@ function resetProfile() {
     localStorage.removeItem('levelup_sound');
     localStorage.removeItem(GEAR_KEY);
     window.location.reload();
-}
-
-function showToast(message, colour) {
-    const existing = document.getElementById('levelup-toast');
-    if (existing) existing.remove();
-
-    const toast       = document.createElement('div');
-    toast.id          = 'levelup-toast';
-    toast.className   = 'save-toast' + (colour === 'accent' ? ' save-toast--accent' : '');
-    toast.textContent = message;
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.transition = 'opacity 0.4s ease';
-        toast.style.opacity    = '0';
-        setTimeout(() => toast.remove(), 400);
-    }, 2000);
 }
 
 // ─── TOOLTIPS ────────────────────────────────────────────────
@@ -1484,19 +1633,27 @@ function setupTooltips() {
 }
 
 // ─── UI HELPERS ──────────────────────────────────────────────
+// Drone runs on Status and Quest screens.
+// Stops on Settings and Shop screens.
+
 function showScreen(id) {
     const prev      = document.querySelector('.screen.active');
-    const wasQuests = prev && prev.id === 'screen-quests';
+    const prevId    = prev ? prev.id : null;
 
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
 
+    const droneScreens = ['screen-status', 'screen-quests'];
+    const wasDrone     = prevId && droneScreens.includes(prevId);
+    const isDrone      = droneScreens.includes(id);
+
+    if (isDrone  && !droneOsc) startAmbientDrone();
+    if (!isDrone && wasDrone)  stopAmbientDrone();
+
     if (id === 'screen-status') setupTooltips();
     if (id === 'screen-quests') {
         renderQuests(dailyQuests, player.completedToday, player.momentum || 1.0);
-        startAmbientDrone();
     }
-    if (wasQuests && id !== 'screen-quests') stopAmbientDrone();
 }
 
 // ─── START ───────────────────────────────────────────────────
