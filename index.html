@@ -17,7 +17,7 @@
     <div class="screen" id="screen-status">
 
         <!-- Settings gear — top left -->
-        <button class="settings-btn" id="settings-btn" title="Settings">⚙</button>
+        <button class="settings-btn" id="settings-btn" title="System Settings">⚙</button>
 
         <!-- Sound toggle — top right -->
         <div class="sound-toggle" id="sound-toggle" title="Toggle sound">
@@ -41,12 +41,13 @@
             <div class="level-progress-label" id="level-progress-label">0 / 25 XP</div>
 
             <div class="tooltip-box" id="tip-level">
-                <strong>Your Level</strong>
-                Your level is calculated from your total earned XP — every quest you
-                complete adds XP permanently. Early levels come quickly to reward momentum.
-                Later levels demand sustained effort over months and years. The progress
-                bar shows exactly how far through your current level you are. Your level
-                never decreases — all progress is yours to keep.
+                <strong>Level</strong>
+                Derived from total earned XP. Every completed directive adds to it
+                permanently — no quest undoes what you have already built. Early levels
+                arrive quickly. Later levels require months of sustained effort. The
+                progress bar shows exactly where you stand. The System has seen every
+                timeline. Those who reach Level 100 all had one thing in common: they
+                kept showing up.
             </div>
 
             <div class="momentum-row tappable" id="momentum-row" data-tip="momentum">
@@ -67,37 +68,39 @@
 
             <div class="tooltip-box" id="tip-hp">
                 <strong>System HP</strong>
-                Complete all five stats each day and HP recovers by 20.
-                Miss a day and the System takes damage — 10 for one missed day,
-                20 for two, 35 for three or more. If HP reaches zero, the
-                System enters a Corrupted state and XP gain is halved until you
-                recover above 25. Max HP grows with your level — the stronger
-                you become, the more punishment you can absorb.
+                Cover all five stats in a single day and the System recovers 20 HP.
+                Miss a day and it takes damage — 10 for one missed day, 20 for two,
+                35 for three or more. At zero, the System enters a Corrupted state:
+                XP gain is halved until HP climbs above 25. Max HP scales with level.
+                The stronger you become, the more punishment the System can absorb
+                before it breaks.
             </div>
 
             <div class="tooltip-box" id="tip-title">
-                <strong>Your Title</strong>
-                Your title reflects how the world would recognise someone with your current
-                attribute levels. Everyone begins as The Beginner — not as an insult, but
-                as an honest starting point. As your attributes grow through quests, your
-                title will change to reflect the person you are becoming.
+                <strong>Designation</strong>
+                The System assigns titles based on observable attribute levels. Everyone
+                starts as The Beginner — not as an insult, but as an accurate reading.
+                As your attributes compound through completed directives, the designation
+                updates to reflect who you are becoming. The System does not give titles
+                away. You earn each one.
             </div>
             <div class="tooltip-box" id="tip-rank">
-                <strong>Your Rank</strong>
-                Ranks follow the F → E → D → C → B → A → S progression. Your rank is
-                determined by your level — F-Rank covers Levels 1 to 15, E-Rank covers
-                16 to 30, and so on upward. Beyond Level 100, ranks extend to S+, SS,
-                SS+, and SSS — territory almost no one reaches. Each rank represents a
-                genuine, observable shift in who you are.
+                <strong>Rank</strong>
+                F → E → D → C → B → A → S, then S+, SS, SS+, SSS beyond Level 100.
+                Rank is determined by level. F-Rank covers Levels 1 to 15. Each
+                threshold represents a genuine, measurable shift in who you are —
+                not a badge, a consequence. Almost no one reaches S-Rank. The System
+                has observed the ones who do. They were not exceptional at the start.
+                They were consistent.
             </div>
             <div class="tooltip-box" id="tip-momentum">
                 <strong>Momentum</strong>
-                Momentum reflects the compounding effect of consistent practice. Research
-                shows that showing up regularly makes each session more effective — up to
-                50% more after two weeks of daily effort. Miss a day occasionally and it
-                barely affects you. Fall away longer and momentum returns to baseline,
-                ready to be rebuilt. Your progress is always yours to keep — momentum
-                only affects how fast you earn it.
+                Consecutive effort compounds. The System has observed this in every
+                timeline. Fourteen days of daily execution brings the multiplier to
+                its maximum — 1.5× XP per directive. Miss a day occasionally and it
+                barely registers. Fall away for longer and the multiplier returns to
+                baseline, ready to be rebuilt. Your XP is always yours. Momentum only
+                governs how fast you earn more.
             </div>
         </div>
 
@@ -112,12 +115,11 @@
             </div>
             <div class="tooltip-box" id="tip-strength">
                 <strong>Strength</strong>
-                Your physical capability — energy, fitness, and ability to exert yourself.
-                A score of 10 is your baseline: functional and alive. This number grows
-                without limit as you complete Strength quests — each point above 10
-                represents real effort invested in your physical self. There is no ceiling
-                because human physical potential has no ceiling either.
-                <em class="tip-flavour">"Still figuring out where the gym is."</em>
+                Physical output — energy, fitness, the ability to exert yourself when
+                it matters. 10 is where survivors start. The question is what you do
+                next. Every Strength directive completed adds to this permanently.
+                There is no ceiling because physical potential has no ceiling.
+                <em class="tip-flavour">"Still working out where the gym is."</em>
             </div>
 
             <div class="stat-row tappable" data-stat="intelligence" data-tip="intelligence">
@@ -129,11 +131,11 @@
             </div>
             <div class="tooltip-box" id="tip-intelligence">
                 <strong>Intelligence</strong>
-                Your capacity to learn, reason, and decide well. A score of 10 means you
-                have a working mind and the ability to grow. Every Intelligence quest
-                completed adds to this permanently — there is no upper limit because
-                learning never stops. This is not an IQ score. It measures deliberate
-                intellectual engagement over time.
+                Capacity to learn, reason, and decide well under pressure. 10 means
+                a functional mind with room to grow. Every Intelligence directive
+                adds to this permanently — there is no upper limit because learning
+                never stops. This is not an IQ score. It measures deliberate
+                intellectual effort compounded over time.
                 <em class="tip-flavour">"Knows things. Working on knowing more things."</em>
             </div>
 
@@ -146,11 +148,11 @@
             </div>
             <div class="tooltip-box" id="tip-agility">
                 <strong>Agility</strong>
-                How well you adapt to change and the unexpected. A score of 10 means you
-                can function when life shifts. Growing this means you navigate disruption
-                with increasing ease and find opportunity in chaos. Agility quests train
-                you to break patterns and respond rather than react.
-                <em class="tip-flavour">"Flexible. Mostly in schedule, working on the rest."</em>
+                Adaptability under disruption. 10 means you can function when
+                circumstances shift. A higher score means you find opportunity in
+                chaos rather than being paralysed by it. Agility directives train
+                deliberate pattern-breaking and response over reaction.
+                <em class="tip-flavour">"Flexible. Mostly in schedule. Working on the rest."</em>
             </div>
 
             <div class="stat-row tappable" data-stat="endurance" data-tip="endurance">
@@ -162,11 +164,12 @@
             </div>
             <div class="tooltip-box" id="tip-endurance">
                 <strong>Endurance</strong>
-                Your ability to sustain effort over time — physically, mentally, emotionally.
-                A score of 10 means you can get through a day. Growing this means you
-                persist through difficulty without burning out. Sleep, consistency, and
-                finishing what you start are the foundations of this attribute.
-                <em class="tip-flavour">"Finishes most things. The rest are 'in progress'."</em>
+                Sustained effort over time — physical, mental, emotional. 10 means
+                you can get through a day. Higher means you persist through difficulty
+                without burning out. Sleep, consistency, and finishing what you start
+                are the foundations. The System has never seen anyone reach high
+                Endurance without earning it slowly.
+                <em class="tip-flavour">"Finishes most things. The rest are in progress."</em>
             </div>
 
             <div class="stat-row tappable" data-stat="charisma" data-tip="charisma">
@@ -178,10 +181,11 @@
             </div>
             <div class="tooltip-box" id="tip-charisma">
                 <strong>Charisma</strong>
-                Your social presence — how you connect, influence, and build relationships.
-                A score of 10 means you are capable of human connection. Growing this means
-                people are drawn to you, trust you, and want to work with you. Charisma
-                quests build your network and deepen genuine communication.
+                Social presence — how you connect, influence, and build trust.
+                10 means you are capable of genuine human connection. Higher means
+                people seek you out, remember you, and want to work beside you.
+                The System has observed that in every timeline, the people who
+                compound the fastest are never alone.
                 <em class="tip-flavour">"Likeable. People remember their name most of the time."</em>
             </div>
 
@@ -196,18 +200,19 @@
             </div>
             <div class="tooltip-box" id="tip-luck">
                 <strong>Luck</strong>
-                Luck cannot be raised directly — it is the average of all your other
-                attributes. This is intentional. What people experience as luck is largely
-                preparation, awareness, resilience, and strong relationships. Grow your
-                core attributes and your luck rises with them. A high Luck score means
-                you have become someone the world calls fortunate — because you earned it.
+                Cannot be raised directly. It is the average of all other attributes.
+                This is intentional. What people experience as luck is preparation,
+                awareness, resilience, and strong relationships compounded over time.
+                Build the core attributes and luck rises with them. A high Luck score
+                means you have become the kind of person the world calls fortunate —
+                because you built them into being.
                 <em class="tip-flavour">"Lucky? Debatable. Getting luckier? Absolutely."</em>
             </div>
 
         </div>
 
         <button class="nav-btn" onclick="showScreen('screen-quests')">
-            VIEW DAILY QUESTS
+            VIEW TODAY'S DIRECTIVES
         </button>
     </div>
 
@@ -216,12 +221,12 @@
     ═══════════════════════════════════════════════ -->
     <div class="screen" id="screen-quests">
         <div class="quest-header tappable" onclick="showScreen('screen-status')">
-            <h2>DAILY QUESTS</h2>
+            <h2>TODAY'S DIRECTIVES</h2>
             <div class="quest-date" id="quest-date"></div>
         </div>
         <div class="quest-list" id="quest-list"></div>
         <div class="back-link" onclick="showScreen('screen-status')">
-            BACK TO STATUS
+            ← RETURN TO STATUS
         </div>
     </div>
 
@@ -231,28 +236,28 @@
     <div class="screen" id="screen-settings">
 
         <div class="settings-header">
-            <h2>[ SETTINGS ]</h2>
+            <h2>[ SYSTEM SETTINGS ]</h2>
         </div>
 
         <!-- Name edit -->
         <div class="settings-section">
-            <div class="settings-section-title">PLAYER NAME</div>
+            <div class="settings-section-title">DESIGNATION</div>
             <input
                 type="text"
                 id="settings-name-input"
                 class="settings-name-input"
                 maxlength="20"
-                placeholder="Enter new name..."
+                placeholder="ENTER NEW DESIGNATION..."
             />
-            <button class="nav-btn" id="save-name-btn">SAVE NAME</button>
+            <button class="nav-btn" id="save-name-btn">CONFIRM DESIGNATION</button>
         </div>
 
         <!-- Gear system -->
         <div class="settings-section">
-            <div class="settings-section-title">PRACTICE GEAR</div>
+            <div class="settings-section-title">OPERATIONAL GEAR</div>
             <div class="gear-desc">
-                Gear controls how many quests you are offered each day per stat.
-                More quests means more practice reps — and real-world learning
+                Gear controls how many directives are issued per stat each day.
+                More directives means more practice reps — and real-world execution
                 is the root lever. XP follows effort, not the other way around.
             </div>
 
@@ -261,46 +266,46 @@
                 <button class="gear-option-btn gear-active" data-gear="1">
                     <div class="gear-name">GEAR 1</div>
                     <div class="gear-label">Standard</div>
-                    <div class="gear-detail">1 quest per stat · 5 daily</div>
+                    <div class="gear-detail">1 directive per stat · 5 daily</div>
                 </button>
 
                 <button class="gear-option-btn" data-gear="2">
                     <div class="gear-name">GEAR 2</div>
                     <div class="gear-label">Practice Mode</div>
-                    <div class="gear-detail">2 quests per stat · 10 daily</div>
+                    <div class="gear-detail">2 directives per stat · 10 daily</div>
                 </button>
 
                 <button class="gear-option-btn" data-gear="3">
                     <div class="gear-name">GEAR 3</div>
                     <div class="gear-label">Deep Practice</div>
-                    <div class="gear-detail">3 quests per stat · 15 daily</div>
+                    <div class="gear-detail">3 directives per stat · 15 daily</div>
                 </button>
 
             </div>
 
             <!-- Per-gear warnings — JS shows only the active one -->
             <div class="gear-warning hidden" id="gear-warning-1">
-                One quest per stat. Consistent and sustainable.
+                One directive per stat. Consistent and sustainable.
                 This path is long — that is the point.
             </div>
 
             <div class="gear-warning hidden" id="gear-warning-2">
-                Two quests per stat daily. A genuine commitment.
-                Research shows doubling practice reps in focused sprints has
-                a disproportionate effect on skill acquisition. Works best
-                for a week, a month, a season — then return to Gear 1 if needed.
+                Two directives per stat, every day. A genuine commitment.
+                Doubling practice reps in focused sprints has a disproportionate
+                effect on skill acquisition. Run it for a week, a month, a season —
+                then return to Gear 1 if needed. The System will be here.
             </div>
 
             <div class="gear-warning hidden" id="gear-warning-3">
-                WARNING: Gear 3 has been known to cause unexpected competence,
-                suspicious life improvement, and in rare cases, actual results.
+                WARNING: Gear 3 has been linked to unexpected competence,
+                suspicious life improvement, and in rare timelines, actual results.
                 The System accepts no responsibility for side effects including
                 but not limited to: new habits, better decisions, and people
                 asking what changed about you.<br><br>
-                <em>Sincerely: fifteen quests a day is a serious daily practice.
-                Each third quest per stat includes a short reflection — writing
+                <em>Fifteen directives daily is a serious operational load.
+                Each third directive per stat includes a short reflection — writing
                 it is not optional. Genuine mastery still takes time. This gear
-                works best when every quest is real.</em>
+                only works if every directive is real.</em>
             </div>
 
         </div>
@@ -308,23 +313,23 @@
         <!-- Danger zone -->
         <div class="danger-zone">
             <div class="settings-section-title">DANGER ZONE</div>
-            <button class="danger-btn" id="reset-btn">RESET PROFILE</button>
+            <button class="danger-btn" id="reset-btn">WIPE PROFILE</button>
 
             <div class="confirm-box hidden" id="confirm-box">
                 <p>
                     <strong>THIS CANNOT BE UNDONE.</strong><br>
-                    All your stats, XP, levels, and quest history<br>
-                    will be permanently deleted.
+                    All stats, XP, levels, and directive history<br>
+                    will be permanently erased from the System.
                 </p>
                 <div class="confirm-actions">
-                    <button class="confirm-yes" id="confirm-yes">RESET</button>
-                    <button class="confirm-no"  id="confirm-no">CANCEL</button>
+                    <button class="confirm-yes" id="confirm-yes">CONFIRM WIPE</button>
+                    <button class="confirm-no"  id="confirm-no">ABORT</button>
                 </div>
             </div>
         </div>
 
         <div class="back-link" onclick="showScreen('screen-status')">
-            ← BACK TO STATUS
+            ← RETURN TO STATUS
         </div>
     </div>
 
@@ -335,7 +340,7 @@
         <div class="onboarding-box" id="onboarding-box">
             <div class="player-title">[ SYSTEM ]</div>
 
-            <!-- Stage 1: lore lines will be injected here dynamically -->
+            <!-- Lore lines are injected dynamically -->
             <div id="lore-lines"></div>
 
             <div id="name-section" class="hidden">
@@ -360,13 +365,13 @@
     <div class="overlay hidden" id="overlay-levelup">
         <div class="overlay-content">
             <div class="overlay-system">[ SYSTEM ]</div>
-            <div class="overlay-headline">LEVEL UP</div>
+            <div class="overlay-headline">THRESHOLD REACHED</div>
             <div class="overlay-level" id="lu-level">2</div>
             <div class="overlay-title" id="lu-title">THE MOTIVATED</div>
             <div class="overlay-sub"   id="lu-sub"></div>
             <div class="overlay-particles" id="lu-particles"></div>
-            <button class="overlay-share-btn"   id="lu-share-btn">⬆ SHARE THIS MOMENT</button>
-            <button class="overlay-dismiss-btn" id="lu-dismiss-btn">DISMISS</button>
+            <button class="overlay-share-btn"   id="lu-share-btn">⬆ BROADCAST THIS</button>
+            <button class="overlay-dismiss-btn" id="lu-dismiss-btn">ACKNOWLEDGED</button>
         </div>
     </div>
 
@@ -376,13 +381,13 @@
     <div class="overlay hidden" id="overlay-rankup">
         <div class="overlay-content rankup-content">
             <div class="overlay-system">[ SYSTEM ]</div>
-            <div class="overlay-headline">RANK UP</div>
+            <div class="overlay-headline">RANK RECLASSIFIED</div>
             <div class="overlay-rank-letter" id="ru-rank">E</div>
-            <div class="overlay-title" id="ru-title">E-RANK ACHIEVED</div>
+            <div class="overlay-title" id="ru-title">E-RANK CONFIRMED</div>
             <div class="overlay-sub"   id="ru-sub"></div>
             <div class="overlay-particles" id="ru-particles"></div>
-            <button class="overlay-share-btn"   id="ru-share-btn">⬆ SHARE THIS MOMENT</button>
-            <button class="overlay-dismiss-btn" id="ru-dismiss-btn">DISMISS</button>
+            <button class="overlay-share-btn"   id="ru-share-btn">⬆ BROADCAST THIS</button>
+            <button class="overlay-dismiss-btn" id="ru-dismiss-btn">ACKNOWLEDGED</button>
         </div>
     </div>
 

@@ -10,16 +10,16 @@ function getCurrentTier(level) {
 }
 
 // ─── GEAR SYSTEM ─────────────────────────────────────────────
-// Gear controls how many quests per stat are offered each day.
-// More quests = more practice reps = faster real-world learning = faster XP.
+// Gear controls how many directives per stat are issued each day.
+// More directives = more practice reps = faster real-world learning = faster XP.
 // The XP acceleration is a consequence of genuine extra effort, not a cheat.
 //
-//   Gear 1 — Standard:      1 quest per stat  (5 total)
-//   Gear 2 — Practice Mode: 2 quests per stat (10 total)
-//   Gear 3 — Deep Practice: 3 quests per stat (15 total) + reflection prompt on slot 3
+//   Gear 1 — Standard:      1 directive per stat  (5 total)
+//   Gear 2 — Practice Mode: 2 directives per stat (10 total)
+//   Gear 3 — Deep Practice: 3 directives per stat (15 total) + reflection prompt on slot 3
 
 // ─── DAILY QUEST SELECTION ───────────────────────────────────
-// Picks quests per stat per day, seeded by date for consistency.
+// Picks directives per stat per day, seeded by date for consistency.
 // Pool is filtered to quests at or below current tier.
 //
 // Gear 2: picks 2 from the full tier-filtered pool using offset seeds.
@@ -42,7 +42,7 @@ function getDailyQuests(allQuests, level, gear) {
     stats.forEach((stat, statIndex) => {
 
         if (gearLevel === 1) {
-            // ── Gear 1: single quest from full tier-filtered pool ──
+            // ── Gear 1: single directive from full tier-filtered pool ──
             const pool = allQuests.filter(q => q.stat === stat && q.tier <= tier);
             if (!pool.length) return;
             const seed   = dateNum + statIndex;
@@ -50,8 +50,8 @@ function getDailyQuests(allQuests, level, gear) {
             if (picked) daily.push(picked);
 
         } else if (gearLevel === 2) {
-            // ── Gear 2: two quests from full tier-filtered pool ──
-            // Different seeds (offset by a prime) ensure different quests are picked.
+            // ── Gear 2: two directives from full tier-filtered pool ──
+            // Different seeds (offset by a prime) ensure different directives are picked.
             const pool = allQuests.filter(q => q.stat === stat && q.tier <= tier);
             if (!pool.length) return;
 
@@ -71,7 +71,7 @@ function getDailyQuests(allQuests, level, gear) {
             if (q2) daily.push(q2);
 
         } else {
-            // ── Gear 3: three quests, varied by tier ──
+            // ── Gear 3: three directives, varied by tier ──
             // Slot 1: player's highest unlocked tier
             // Slot 2: one tier below highest (min Tier 1)
             // Slot 3: Tier 1 always — foundational reinforcement
@@ -99,7 +99,7 @@ function getDailyQuests(allQuests, level, gear) {
             const q2 = pool2.length ? pool2[seed2 % pool2.length] : null;
             const q3 = pool3.length ? pool3[seed3 % pool3.length] : null;
 
-            // Deduplication — avoids showing the same quest twice in a day.
+            // Deduplication — avoids showing the same directive twice in a day.
             // This can happen at Tier 1 where all three pools are identical.
             // We try the next candidate in the pool before giving up.
             const usedIds = [];
@@ -154,7 +154,7 @@ function renderQuests(quests, completedIds, momentum) {
         card.className = 'quest-card' + (isComplete ? ' completed' : '');
         card.id        = 'quest-card-' + quest.id;
 
-        // Show effective XP only if momentum bonus is active and quest not yet done
+        // Show effective XP only if momentum bonus is active and directive not yet done
         const xpBonus = (!isComplete && momentum > 1)
             ? `<div class="quest-xp-effective">→ +${effectiveXP}</div>`
             : '';
@@ -167,20 +167,20 @@ function renderQuests(quests, completedIds, momentum) {
                </div>`
             : '';
 
-        // Reflection prompt — only on Gear 3 slot 3 quests, only when not yet complete.
+        // Reflection prompt — only on Gear 3 slot 3 directives, only when not yet complete.
         // The complete button stays locked until at least 10 characters are written.
-        // Writing is the practice itself — nothing is stored or sent anywhere.
+        // The writing is the practice. Nothing is stored or transmitted.
         const reflectionSection = (quest._requiresReflection && !isComplete)
             ? `<div class="reflection-wrap">
-                   <div class="reflection-label">[ REFLECTION ]</div>
+                   <div class="reflection-label">[ FIELD REPORT ]</div>
                    <div class="reflection-hint">
-                       Write what you noticed. It does not need to be saved —
-                       bringing the thought into the world is the practice.
+                       Log what you observed. It does not need to be saved —
+                       bringing the thought into form is the practice itself.
                    </div>
                    <textarea
                        class="reflection-input"
                        id="reflection-${quest.id}"
-                       placeholder="What did you observe, feel, or learn doing this?"
+                       placeholder="What did you notice, feel, or learn?"
                        rows="3"
                    ></textarea>
                </div>`
@@ -202,7 +202,7 @@ function renderQuests(quests, completedIds, momentum) {
                     ${quest._requiresReflection ? 'data-requires-reflection="true"' : ''}
                     ${isComplete ? 'disabled' : ''}
                 >
-                    ${isComplete ? '✓ COMPLETED' : 'COMPLETE QUEST'}
+                    ${isComplete ? '✓ EXECUTED' : 'MARK DONE'}
                 </button>
             </div>
             <div class="quest-card-right">

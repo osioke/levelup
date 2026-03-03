@@ -98,16 +98,16 @@ function decayMomentum(current, missedDays) {
 
 // ─── SHARE TAGLINES ──────────────────────────────────────────
 const SHARE_TAGLINES = [
-    'Every day is a quest. Are you playing?',
+    'Every day is a directive. Are you executing?',
     'Real life has no respawn. Level up while you can.',
     'The grind never stops — but it does compound.',
-    'F-Rank today. What about tomorrow?',
-    'Stats don\'t lie. Effort doesn\'t either.',
-    'The system is watching. Are you showing up?',
-    'Progress is invisible until suddenly it isn\'t.',
-    'Your future self is watching. Don\'t let them down.',
-    'Discipline is just delayed gratification done consistently.',
-    'One quest at a time. One level at a time.'
+    'F-Rank today. The System has seen what comes next.',
+    'Stats do not lie. Neither does effort.',
+    'The System is watching. Show up again tomorrow.',
+    'Progress is invisible — until suddenly it is not.',
+    'Your future self deployed this. Do not let them down.',
+    'Discipline is delayed gratification done consistently.',
+    'One directive at a time. One level at a time.'
 ];
 
 function getRandomTagline() {
@@ -521,7 +521,7 @@ function runAwakenSequence(name) {
     overlay.classList.remove('hidden');
 
     const bootLines = [
-        '> SCANNING PLAYER DATA...',
+        '> SCANNING SURVIVOR DATA...',
         '> ASSESSING ATTRIBUTES...',
         '> CALCULATING BASELINE...',
         '> COMPILING STAT MATRIX...',
@@ -886,7 +886,7 @@ function showLevelUpOverlay(level) {
 
     const titleText = titleFromLevel(level);
     const rankText  = rankFromLevel(level);
-    const subText   = rankText + '-RANK  ·  KEEP GOING';
+    const subText   = rankText + '-RANK  ·  SHOW UP AGAIN TOMORROW';
 
     document.getElementById('lu-level').textContent = level;
     document.getElementById('lu-title').textContent = titleText;
@@ -897,7 +897,7 @@ function showLevelUpOverlay(level) {
 
     document.getElementById('lu-share-btn').onclick = () => {
         playUIClick();
-        shareCard({ headline: 'LEVEL UP', bigText: String(level), titleText, subText, accentColor: '#4fc3f7' });
+        shareCard({ headline: 'THRESHOLD REACHED', bigText: String(level), titleText, subText, accentColor: '#4fc3f7' });
     };
     document.getElementById('lu-dismiss-btn').onclick = () => {
         playUIClick();
@@ -910,7 +910,7 @@ function showRankUpOverlay(rank, level) {
     playRankUp();
     spawnParticles('ru-particles', 35, 'var(--gold)');
 
-    const titleText = rank + '-RANK ACHIEVED';
+    const titleText = rank + '-RANK CONFIRMED';
     const subText   = titleFromLevel(level) + '  ·  LEVEL ' + level;
 
     document.getElementById('ru-rank').textContent  = rank;
@@ -922,7 +922,7 @@ function showRankUpOverlay(rank, level) {
 
     document.getElementById('ru-share-btn').onclick = () => {
         playUIClick();
-        shareCard({ headline: 'RANK UP', bigText: rank, titleText, subText, accentColor: '#ffd700' });
+        shareCard({ headline: 'RANK RECLASSIFIED', bigText: rank, titleText, subText, accentColor: '#ffd700' });
     };
     document.getElementById('ru-dismiss-btn').onclick = () => {
         playUIClick();
@@ -1099,7 +1099,7 @@ function openSettings() {
             const gear = parseInt(btn.dataset.gear, 10);
             saveGear(gear);
             updateGearUI(gear);
-            showToast('✓ GEAR ' + gear + ' ACTIVATED');
+            showToast('GEAR ' + gear + ' ENGAGED');
         };
     });
 
@@ -1123,7 +1123,7 @@ function savePlayerName() {
     player.name = newName;
     savePlayer();
     updateStatusScreen();
-    showToast('✓ NAME UPDATED');
+    showToast('DESIGNATION UPDATED');
     setTimeout(() => showScreen('screen-status'), 1200);
 }
 
