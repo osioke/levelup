@@ -16,10 +16,8 @@
     ═══════════════════════════════════════════════ -->
     <div class="screen" id="screen-status">
 
-        <!-- Settings gear — top left -->
         <button class="settings-btn" id="settings-btn" title="System Settings">⚙</button>
 
-        <!-- Sound cycle toggle — top right -->
         <div class="sound-toggle" id="sound-toggle" title="Toggle sound">
             <span id="sound-icon">🔇</span>
         </div>
@@ -211,10 +209,11 @@
 
         </div>
 
-        <!-- Gold + shop access row -->
+        <!-- Gold + shop + map row -->
         <div class="gold-row">
             <span class="gold-label">◈ GOLD</span>
             <span class="gold-value" id="gold-value">0</span>
+            <button class="map-nav-btn"  id="map-btn">WORLD MAP →</button>
             <button class="shop-nav-btn" id="shop-btn">SUPPLY CACHE →</button>
         </div>
 
@@ -227,7 +226,6 @@
          QUESTS SCREEN
     ═══════════════════════════════════════════════ -->
     <div class="screen" id="screen-quests">
-        <!-- Tapping the header navigates back — same as before -->
         <div class="quest-header" id="quest-header-back">
             <h2>TODAY'S DIRECTIVES</h2>
             <div class="quest-date" id="quest-date"></div>
@@ -237,11 +235,116 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════
+         WORLD MAP SCREEN
+    ═══════════════════════════════════════════════ -->
+    <div class="screen" id="screen-map">
+
+        <!-- Tappable header — back to status -->
+        <div class="map-header" id="map-header-back">
+            <h2>[ WORLD MAP ]</h2>
+            <div class="map-header-sub" id="map-coords"></div>
+        </div>
+
+        <!-- The radar sweep and zone grid live here -->
+        <div class="map-viewport" id="map-viewport">
+
+            <!-- Radar sweep overlay — pure CSS animation -->
+            <div class="map-radar-sweep" id="map-radar-sweep"></div>
+
+            <!-- 3×3 CSS grid. Corners are void cells. -->
+            <div class="map-grid" id="map-grid">
+
+                <!-- Row 1 -->
+                <div class="map-void"></div>
+                <div class="map-zone" id="zone-intelligence" data-zone="intelligence">
+                    <div class="zone-fog" id="fog-intelligence"></div>
+                    <div class="zone-terrain" id="terrain-intelligence"></div>
+                    <div class="zone-content">
+                        <div class="zone-name">SIGNAL GRID</div>
+                        <div class="zone-stat-name">INTELLIGENCE</div>
+                        <div class="zone-value" id="zval-intelligence">—</div>
+                        <div class="zone-tier" id="ztier-intelligence"></div>
+                    </div>
+                </div>
+                <div class="map-void"></div>
+
+                <!-- Row 2 -->
+                <div class="map-zone" id="zone-strength" data-zone="strength">
+                    <div class="zone-fog" id="fog-strength"></div>
+                    <div class="zone-terrain" id="terrain-strength"></div>
+                    <div class="zone-content">
+                        <div class="zone-name">THE IRON PEAKS</div>
+                        <div class="zone-stat-name">STRENGTH</div>
+                        <div class="zone-value" id="zval-strength">—</div>
+                        <div class="zone-tier" id="ztier-strength"></div>
+                    </div>
+                </div>
+
+                <!-- Centre hub -->
+                <div class="map-zone map-zone--hub" id="zone-hub">
+                    <div class="zone-fog" id="fog-hub"></div>
+                    <div class="zone-content zone-content--hub">
+                        <div class="hub-pin" id="hub-pin">◈</div>
+                        <div class="hub-label">THE CONVERGENCE</div>
+                        <div class="hub-name" id="hub-player-name"></div>
+                        <div class="hub-rank" id="hub-rank"></div>
+                    </div>
+                </div>
+
+                <div class="map-zone" id="zone-charisma" data-zone="charisma">
+                    <div class="zone-fog" id="fog-charisma"></div>
+                    <div class="zone-terrain" id="terrain-charisma"></div>
+                    <div class="zone-content">
+                        <div class="zone-name">SOCIAL FOREST</div>
+                        <div class="zone-stat-name">CHARISMA</div>
+                        <div class="zone-value" id="zval-charisma">—</div>
+                        <div class="zone-tier" id="ztier-charisma"></div>
+                    </div>
+                </div>
+
+                <!-- Row 3 -->
+                <div class="map-void"></div>
+                <div class="map-zone map-zone--bottom-left" id="zone-endurance" data-zone="endurance">
+                    <div class="zone-fog" id="fog-endurance"></div>
+                    <div class="zone-terrain" id="terrain-endurance"></div>
+                    <div class="zone-content">
+                        <div class="zone-name">THE DEAD SEA</div>
+                        <div class="zone-stat-name">ENDURANCE</div>
+                        <div class="zone-value" id="zval-endurance">—</div>
+                        <div class="zone-tier" id="ztier-endurance"></div>
+                    </div>
+                </div>
+                <div class="map-zone" id="zone-agility" data-zone="agility">
+                    <div class="zone-fog" id="fog-agility"></div>
+                    <div class="zone-terrain" id="terrain-agility"></div>
+                    <div class="zone-content">
+                        <div class="zone-name">ASHFIELD</div>
+                        <div class="zone-stat-name">AGILITY</div>
+                        <div class="zone-value" id="zval-agility">—</div>
+                        <div class="zone-tier" id="ztier-agility"></div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- end map-grid -->
+
+        </div>
+        <!-- end map-viewport -->
+
+        <!-- Scan status bar below map -->
+        <div class="map-status-bar">
+            <span class="map-status-label">SCAN STATUS</span>
+            <span class="map-status-value" id="map-scan-status">ACTIVE</span>
+        </div>
+
+        <div class="back-link" id="map-back-link">← RETURN TO STATUS</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
          SHOP SCREEN
     ═══════════════════════════════════════════════ -->
     <div class="screen" id="screen-shop">
 
-        <!-- Header is the tap-back target — no back text inside it -->
         <div class="shop-header" id="shop-header-back">
             <h2>[ SUPPLY CACHE ]</h2>
             <div class="shop-gold-display">
@@ -265,7 +368,6 @@
     ═══════════════════════════════════════════════ -->
     <div class="screen" id="screen-settings">
 
-        <!-- Header is the tap-back target — no back text inside it -->
         <div class="settings-header" id="settings-header-back">
             <h2>[ SYSTEM SETTINGS ]</h2>
         </div>
