@@ -702,6 +702,8 @@ async function init() {
     document.getElementById('map-btn').addEventListener('click',      ()=>navTo('screen-map'));
     document.getElementById('invite-btn').addEventListener('click',   ()=>{ playUIClick(); shareReferralLink(); });
     document.getElementById('view-directives-btn').addEventListener('click', ()=>navTo('screen-quests'));
+    document.getElementById('install-confirm-btn').addEventListener('click', ()=>{ playUIClick(); acceptInstall(); });
+    document.getElementById('install-dismiss-btn').addEventListener('click', ()=>{ playUIClick(); dismissInstall(); });
     document.getElementById('quest-header-back').addEventListener('click',   ()=>navTo('screen-status'));
     document.getElementById('quests-back-link').addEventListener('click',    ()=>navTo('screen-status'));
     document.getElementById('map-header-back').addEventListener('click',     ()=>navTo('screen-status'));
@@ -1421,6 +1423,83 @@ function showScreen(id) {
     if (prevId === 'screen-quests' && id !== 'screen-quests') {
         activeQuestFilter = null;
     }
+}
+
+// ════════════════════════════════════════════════════════════════
+// PAGE VISIBILITY — pause audio when app goes to background
+//
+// Uses AudioContext.suspend() / .resume() rather than stopping
+// nodes, so all connections, timers, and state are preserved.
+// The app can still receive push notifications while suspended
+// because the Service Worker runs independently of the page JS.
+// ════════════════════════════════════════════════════════════════
+document.addEventListener('visibilitychange', () => {
+    if (!audioCtx) return;
+    if (document.visibilityState === 'hidden') {
+        // App moved to background — suspend context silently
+        audioCtx.suspend().catch(() => {});
+    } else {
+        // App returned to foreground — resume where it left off
+        audioCtx.resume().catch(() => {});
+    }
+});
+
+// ════════════════════════════════════════════════════════════════
+// PWA INSTALL PROMPT
+//
+// We capture the browser's beforeinstallprompt event and hold it.
+// Rather than letting the browser show its generic dialog, we show
+// our own in-character System prompt at the right moment.
+//
+// Timing: shown once, 8 seconds after the status screen loads,
+// only if the app is not already installed. Dismissed state is
+// stored in localStorage so it never re-appears after a decision.
+// ════════════════════════════════════════════════════════════════
+let deferredInstallPrompt = null;
+const INSTALL_DISMISSED_KEY = 'levelup_install_dismissed';
+
+window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();   // stop the browser's own dialog
+    deferredInstallPrompt = e;
+    // Show our prompt if the user hasn't dismissed it before
+    if (!localStorage.getItem(INSTALL_DISMISSED_KEY)) {
+        setTimeout(showInstallPrompt, 8000);
+    }
+});
+
+// If the app is already installed, the appinstalled event fires
+window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    localStorage.setItem(INSTALL_DISMISSED_KEY, 'installed');
+    showLog('[ TERMINAL ANCHORED TO DEVICE — STANDING BY ]', 'accent');
+});
+
+function showInstallPrompt() {
+    if (!deferredInstallPrompt) return;
+    const overlay = document.getElementById('overlay-install');
+    if (!overlay) return;
+    overlay.classList.remove('hidden');
+}
+
+function acceptInstall() {
+    const overlay = document.getElementById('overlay-install');
+    if (overlay) overlay.classList.add('hidden');
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(choice => {
+        if (choice.outcome === 'accepted') {
+            localStorage.setItem(INSTALL_DISMISSED_KEY, 'installed');
+            showLog('[ TERMINAL INSTALLATION CONFIRMED ]', 'accent');
+        }
+        deferredInstallPrompt = null;
+    });
+}
+
+function dismissInstall() {
+    const overlay = document.getElementById('overlay-install');
+    if (overlay) overlay.classList.add('hidden');
+    localStorage.setItem(INSTALL_DISMISSED_KEY, 'dismissed');
+    deferredInstallPrompt = null;
 }
 
 // ─── START ───────────────────────────────────────────────────

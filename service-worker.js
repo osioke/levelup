@@ -1,4 +1,4 @@
-const CACHE_NAME = 'levelup-v17';
+const CACHE_NAME = 'levelup-v18';
 
 // These are the app shell files we want to pre-cache during install.
 // On every new deploy, bump CACHE_NAME so the install event fires again,

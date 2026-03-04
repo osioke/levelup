@@ -6,7 +6,16 @@
     <title>LevelUp</title>
     <link rel="stylesheet" href="css/style.css" />
     <link rel="manifest" href="manifest.json" />
+
+    <!-- PWA / home screen meta -->
     <meta name="theme-color" content="#0f0f1a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="LevelUp" />
+    <!-- Apple touch icons — Safari uses these for home screen -->
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png" />
 </head>
 <body>
 
@@ -456,6 +465,35 @@
         <div class="relaunch-boot-inner">
             <div class="relaunch-lines" id="relaunch-lines"></div>
             <div class="relaunch-skip"  id="relaunch-skip">[ TAP TO SKIP ]</div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         PWA INSTALL PROMPT OVERLAY
+         Shown once, 8s after first status screen load.
+         In-character System framing. Not a skip — a choice.
+    ═══════════════════════════════════════════════ -->
+    <div class="overlay hidden" id="overlay-install">
+        <div class="overlay-content install-content">
+            <div class="install-tag">[ SYSTEM RECOMMENDATION ]</div>
+            <div class="install-headline">ANCHOR THIS TERMINAL</div>
+            <div class="install-body">
+                Installing to your device gives the System a permanent presence
+                in your operational environment. The Terminal loads faster,
+                runs offline, and can alert you when directives are waiting.
+                <br><br>
+                The System does not require this. But field operators who
+                anchor their terminal complete more directives.
+                The data is consistent across all observed timelines.
+            </div>
+            <div class="install-actions">
+                <button class="install-confirm-btn" id="install-confirm-btn">
+                    [ ANCHOR TERMINAL ]
+                </button>
+                <button class="install-dismiss-btn" id="install-dismiss-btn">
+                    LATER
+                </button>
+            </div>
         </div>
     </div>
 

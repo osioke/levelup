@@ -1883,7 +1883,81 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   FIRST TRANSMISSION OVERLAY — post-onboarding briefing
+   PWA INSTALL OVERLAY
+══════════════════════════════════════════════════════════════ */
+
+.install-content {
+    width: min(440px, 92vw);
+    padding: 28px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: var(--bg, #0f0f1a);
+    border: 1px solid rgba(79, 195, 247, 0.3);
+    text-align: left;
+}
+
+.install-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 3px;
+    color: var(--accent, #4fc3f7);
+    opacity: 0.55;
+}
+
+.install-headline {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+    letter-spacing: 3px;
+    color: var(--accent, #4fc3f7);
+    text-shadow: 0 0 12px rgba(79, 195, 247, 0.4);
+}
+
+.install-body {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    line-height: 1.8;
+    letter-spacing: 0.4px;
+    color: var(--text-dim, rgba(200, 214, 229, 0.6));
+}
+
+.install-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.install-confirm-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: var(--accent, #4fc3f7);
+    background: rgba(79, 195, 247, 0.08);
+    border: 1px solid var(--accent, #4fc3f7);
+    padding: 11px 16px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    text-align: center;
+}
+.install-confirm-btn:hover { background: rgba(79, 195, 247, 0.16); }
+
+.install-dismiss-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: var(--text-dim, rgba(200, 214, 229, 0.4));
+    background: transparent;
+    border: 1px solid var(--border, rgba(79, 195, 247, 0.15));
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+    text-align: center;
+}
+.install-dismiss-btn:hover {
+    color: var(--text-dim, rgba(200, 214, 229, 0.7));
+    border-color: rgba(79, 195, 247, 0.3);
+}
 ══════════════════════════════════════════════════════════════ */
 
 /*
