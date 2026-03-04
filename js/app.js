@@ -689,6 +689,7 @@ function navTo(screenId) { playUIClick(); showScreen(screenId); }
 
 // ─── INIT ────────────────────────────────────────────────────
 async function init() {
+    checkIncomingReferral();   // must run before player load so ref param is captured
     const questsPromise = loadQuests();
     player = loadPlayer();
 
@@ -699,6 +700,7 @@ async function init() {
     document.getElementById('settings-btn').addEventListener('click', ()=>{ playUIClick(); openSettings(); });
     document.getElementById('shop-btn').addEventListener('click',     ()=>{ playUIClick(); openShop(); });
     document.getElementById('map-btn').addEventListener('click',      ()=>navTo('screen-map'));
+    document.getElementById('invite-btn').addEventListener('click',   ()=>{ playUIClick(); shareReferralLink(); });
     document.getElementById('view-directives-btn').addEventListener('click', ()=>navTo('screen-quests'));
     document.getElementById('quest-header-back').addEventListener('click',   ()=>navTo('screen-status'));
     document.getElementById('quests-back-link').addEventListener('click',    ()=>navTo('screen-status'));
@@ -882,6 +884,8 @@ function loadPlayer() {
     if(typeof p.gold!=='number') p.gold=0;
     if(!p.buffs) p.buffs=defaultBuffs();
     if(!p.mapMilestones) p.mapMilestones={};
+    // Existing players who predate the briefing — mark as seen so it never fires
+    if(typeof p.hasSeenBriefing === 'undefined') p.hasSeenBriefing=true;
     return p;
 }
 function savePlayer() { localStorage.setItem(STORAGE_KEY,JSON.stringify(player)); }
@@ -890,13 +894,171 @@ function createPlayer(name) {
     STAT_NAMES.forEach(s=>{stats[s]=STAT_FLOOR;});
     const maxHp=calcMaxHp(1);
     player={name,stats,completedToday:[],lastQuestDate:today(),consecutiveDays:1,momentum:1.0,
-        lastActiveDate:today(),hp:maxHp,maxHp,corrupted:false,gold:0,buffs:defaultBuffs(),mapMilestones:{}};
+        lastActiveDate:today(),hp:maxHp,maxHp,corrupted:false,gold:0,buffs:defaultBuffs(),
+        mapMilestones:{},hasSeenBriefing:false};
     savePlayer();
     dailyQuests=getDailyQuests(allQuests,calculateLevel(),effectiveGear());
-    showStatusScreenWithAnimation();
+    recordReferralIfPresent();
+    // Show status screen first (invisible behind overlay), then fire briefing
+    updateStatusScreen();
+    showScreen('screen-status');
+    runFirstTransmission();
 }
 function effectiveGear() {
     return (player&&player.buffs&&buffActive(player.buffs.sprintScroll))?Math.min(3,currentGear+1):currentGear;
+}
+
+// ════════════════════════════════════════════════════════════════
+// FIRST TRANSMISSION — post-onboarding briefing overlay
+// Fires once only after the Awaken sequence, on first ever launch.
+// "Skip" is implicit: the VIEW DIRECTIVES button is the only exit.
+// ════════════════════════════════════════════════════════════════
+const BRIEFING_LINES = [
+    { text: 'THIS IS YOUR TERMINAL.', highlight: false },
+    { text: 'IT IS A MIRROR OF YOUR REAL-WORLD SELF — A LIVE READOUT OF HOW YOU INVEST YOUR TIME AND EFFORT.', highlight: false },
+    { text: 'YOUR STATS ARE NOT SCORES. THEY ARE CONSEQUENCES. COMPLETE DIRECTIVES AND THEY RISE. NEGLECT THEM AND THEY DO NOT FALL — BUT YOU WILL NOTICE THE DIFFERENCE.', highlight: false },
+    { text: 'MOMENTUM TRACKS YOUR CONSISTENCY. CONSECUTIVE DAYS COMPOUND IT. MISS DAYS AND IT DECAYS. THE SYSTEM CANNOT FORCE YOU TO SHOW UP. THAT IS YOUR JOB.', highlight: false },
+    { text: 'GOLD IS EARNED BY COMPLETING DIRECTIVES. SPEND IT IN THE SUPPLY CACHE ON TOOLS THAT HELP YOU PERFORM BETTER. EVERY ITEM CORRESPONDS TO A REAL-WORLD ACT.', highlight: false },
+    { text: 'THE WORLD MAP SHOWS YOU THE TERRITORY YOUR STATS HAVE REVEALED. IT EXPANDS AS YOU GROW. NEGLECTED STATS REMAIN DARK.', highlight: false },
+    { text: '[ STANDING BY. YOUR FIRST DIRECTIVES HAVE BEEN ISSUED. ]', highlight: true }
+];
+const BRIEFING_DELAY_BETWEEN = 1100;  // ms between each line appearing
+const BRIEFING_BTN_DELAY      = 600;  // ms after last line before button appears
+
+function runFirstTransmission() {
+    if (player.hasSeenBriefing) return;
+    const overlay  = document.getElementById('overlay-briefing');
+    const linesEl  = document.getElementById('briefing-lines');
+    const btn      = document.getElementById('briefing-directives-btn');
+    overlay.classList.remove('hidden');
+    linesEl.innerHTML = '';
+    btn.classList.add('hidden');
+    btn.classList.remove('briefing-btn--visible');
+
+    let idx = 0;
+    function nextLine() {
+        if (idx >= BRIEFING_LINES.length) {
+            // All lines shown — reveal button after brief pause
+            setTimeout(() => {
+                btn.classList.remove('hidden');
+                requestAnimationFrame(() =>
+                    requestAnimationFrame(() => btn.classList.add('briefing-btn--visible'))
+                );
+            }, BRIEFING_BTN_DELAY);
+            return;
+        }
+        const { text, highlight } = BRIEFING_LINES[idx];
+        const el = document.createElement('div');
+        el.className = 'briefing-line' + (highlight ? ' briefing-line--highlight' : '');
+        el.textContent = text;
+        linesEl.appendChild(el);
+        requestAnimationFrame(() =>
+            requestAnimationFrame(() => el.classList.add('briefing-line--visible'))
+        );
+        idx++;
+        setTimeout(nextLine, BRIEFING_DELAY_BETWEEN);
+    }
+
+    btn.onclick = () => {
+        playUIClick();
+        overlay.classList.add('hidden');
+        player.hasSeenBriefing = true;
+        savePlayer();
+        // Navigate straight to directives — back from there goes to status
+        showScreen('screen-quests');
+    };
+
+    nextLine();
+}
+
+// ════════════════════════════════════════════════════════════════
+// REFERRAL SYSTEM — client-side layer
+// Full cross-device payout requires Stage 5 backend (Supabase/Firebase).
+// This layer handles:
+//   1. Referral link generation (appends ?ref=PLAYERID to share URL)
+//   2. ?ref= param detection on new installs — stores pending claim locally
+//   3. Gold reward display once backend confirms (stub for now)
+//
+// Referral ID is derived from the first 6 chars of a hash of player name
+// + creation timestamp. Not a secure ID — just enough to be unique for
+// the bulletin board lookup in Stage 5.
+// ════════════════════════════════════════════════════════════════
+const REFERRAL_GOLD = 50;   // Gold awarded to referrer on recruit Awaken — TBD per design doc
+
+function generateRefId(name, seed) {
+    // Simple deterministic ID: not cryptographic, just unique enough
+    let hash = 0;
+    const str = name + String(seed);
+    for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash |= 0;
+    }
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let id = '';
+    let n = Math.abs(hash);
+    for (let i = 0; i < 6; i++) { id += chars[n % chars.length]; n = Math.floor(n / chars.length); }
+    return id;
+}
+
+function getOrCreateRefId() {
+    if (!player) return null;
+    if (!player.refId) {
+        player.refId = generateRefId(player.name, player.lastQuestDate || Date.now());
+        savePlayer();
+    }
+    return player.refId;
+}
+
+function getReferralLink() {
+    const base = window.location.origin + '/levelup/';
+    return base + '?ref=' + getOrCreateRefId();
+}
+
+// Called at init — checks if this is a referred new install
+function checkIncomingReferral() {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (!ref) return;
+    // Store the referrer ID locally — Stage 5 backend will resolve the reward
+    // when both sides sync. For now we record it so it survives until then.
+    localStorage.setItem('levelup_pending_ref', ref.toUpperCase());
+}
+
+// Called after createPlayer — marks that this install was referred
+// Stage 5 will pick this up and send gold to the referrer via the bulletin board
+function recordReferralIfPresent() {
+    const pendingRef = localStorage.getItem('levelup_pending_ref');
+    if (!pendingRef) return;
+    if (!player.referredBy) {
+        player.referredBy = pendingRef;
+        savePlayer();
+        // Stage 5: POST { recruit_ref: player.refId, referrer_ref: pendingRef }
+        // to sync_instances table. For now just log.
+        showLog('[ RECRUIT SIGNAL ACKNOWLEDGED — REFERRER WILL BE NOTIFIED ]', 'accent');
+    }
+    localStorage.removeItem('levelup_pending_ref');
+}
+
+// Share referral link — uses Web Share API if available, clipboard fallback
+function shareReferralLink() {
+    const link = getReferralLink();
+    const text = 'The System found me. It will find you too. Join the resistance: ' + link;
+    if (navigator.share) {
+        navigator.share({ title: 'LevelUp — Join the Resistance', text, url: link })
+            .catch(() => copyReferralToClipboard(link));
+    } else {
+        copyReferralToClipboard(link);
+    }
+}
+
+function copyReferralToClipboard(link) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(link)
+            .then(() => showLog('[ FREQUENCY COPIED — BROADCAST TO RECRUITS ]', 'accent'))
+            .catch(() => showLog('[ COPY FAILED — SHARE MANUALLY ]', 'warn'));
+    } else {
+        showLog('[ FREQUENCY: ' + link + ' ]', 'accent');
+    }
 }
 
 // ─── DAILY RESET ──────────────────────────────────────────────
